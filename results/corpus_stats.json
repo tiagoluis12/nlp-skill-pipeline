@@ -1,0 +1,46 @@
+{
+  "overall": {
+    "avg_sentences_clean": 3.47,
+    "clean_rows": 2123,
+    "dedup_rate": 0.3934,
+    "dedup_removed": 1377,
+    "raw_rows": 3500
+  },
+  "roles": {
+    "cloud_support": {
+      "avg_sentences_clean": 3.42,
+      "clean_rows": 351,
+      "dedup_rate": 0.4986,
+      "dedup_removed": 349,
+      "raw_rows": 700
+    },
+    "cybersecurity": {
+      "avg_sentences_clean": 3.31,
+      "clean_rows": 464,
+      "dedup_rate": 0.3371,
+      "dedup_removed": 236,
+      "raw_rows": 700
+    },
+    "data_analyst": {
+      "avg_sentences_clean": 3.56,
+      "clean_rows": 389,
+      "dedup_rate": 0.4443,
+      "dedup_removed": 311,
+      "raw_rows": 700
+    },
+    "qa_engineer": {
+      "avg_sentences_clean": 3.46,
+      "clean_rows": 544,
+      "dedup_rate": 0.2229,
+      "dedup_removed": 156,
+      "raw_rows": 700
+    },
+    "software_dev": {
+      "avg_sentences_clean": 3.59,
+      "clean_rows": 375,
+      "dedup_rate": 0.4643,
+      "dedup_removed": 325,
+      "raw_rows": 700
+    }
+  }
+}

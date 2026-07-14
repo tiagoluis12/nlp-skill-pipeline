@@ -1,0 +1,83 @@
+{
+  "builder_name": "json",
+  "citation": "",
+  "config_name": "default",
+  "dataset_name": "json",
+  "dataset_size": 3778594,
+  "description": "",
+  "download_checksums": {
+    "/Users/tiagoluis/Developer/nlp-skill-pipeline/data/benchmarks/skillspan/train.json": {
+      "num_bytes": 2207996,
+      "checksum": null
+    },
+    "/Users/tiagoluis/Developer/nlp-skill-pipeline/data/benchmarks/skillspan/dev.json": {
+      "num_bytes": 1036099,
+      "checksum": null
+    },
+    "/Users/tiagoluis/Developer/nlp-skill-pipeline/data/benchmarks/skillspan/test.json": {
+      "num_bytes": 1116219,
+      "checksum": null
+    }
+  },
+  "download_size": 4360314,
+  "features": {
+    "idx": {
+      "dtype": "int64",
+      "_type": "Value"
+    },
+    "tokens": {
+      "feature": {
+        "dtype": "string",
+        "_type": "Value"
+      },
+      "_type": "Sequence"
+    },
+    "tags_skill": {
+      "feature": {
+        "dtype": "string",
+        "_type": "Value"
+      },
+      "_type": "Sequence"
+    },
+    "tags_knowledge": {
+      "feature": {
+        "dtype": "string",
+        "_type": "Value"
+      },
+      "_type": "Sequence"
+    },
+    "source": {
+      "dtype": "string",
+      "_type": "Value"
+    }
+  },
+  "homepage": "",
+  "license": "",
+  "size_in_bytes": 8138908,
+  "splits": {
+    "train": {
+      "name": "train",
+      "num_bytes": 1964547,
+      "num_examples": 4800,
+      "dataset_name": "json"
+    },
+    "dev": {
+      "name": "dev",
+      "num_bytes": 876716,
+      "num_examples": 3174,
+      "dataset_name": "json"
+    },
+    "test": {
+      "name": "test",
+      "num_bytes": 937331,
+      "num_examples": 3569,
+      "dataset_name": "json"
+    }
+  },
+  "version": {
+    "version_str": "0.0.0",
+    "major": 0,
+    "minor": 0,
+    "patch": 0
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "countries": [
+    "us",
+    "gb"
+  ],
+  "output": "data/raw/cloud_support.jsonl",
+  "pages": 20,
+  "query_limit": null,
+  "records": 700,
+  "results_per_page": 50,
+  "role_type": "cloud_support",
+  "target_records": 700,
+  "unique_titles": 275,
+  "where": null
+}

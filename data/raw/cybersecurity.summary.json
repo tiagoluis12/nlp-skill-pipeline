@@ -1,0 +1,15 @@
+{
+  "countries": [
+    "us",
+    "gb"
+  ],
+  "output": "data/raw/cybersecurity.jsonl",
+  "pages": 20,
+  "query_limit": null,
+  "records": 700,
+  "results_per_page": 50,
+  "role_type": "cybersecurity",
+  "target_records": 700,
+  "unique_titles": 281,
+  "where": null
+}

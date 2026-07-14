@@ -1,0 +1,15 @@
+{
+  "countries": [
+    "us",
+    "gb"
+  ],
+  "output": "data/raw/qa_engineer.jsonl",
+  "pages": 20,
+  "query_limit": null,
+  "records": 700,
+  "results_per_page": 50,
+  "role_type": "qa_engineer",
+  "target_records": 700,
+  "unique_titles": 356,
+  "where": null
+}

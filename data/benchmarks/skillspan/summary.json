@@ -1,0 +1,80 @@
+{
+  "dev": {
+    "columns": [
+      "idx",
+      "tokens",
+      "tags_skill",
+      "tags_knowledge",
+      "source"
+    ],
+    "label_counts": {
+      "tags_knowledge": {
+        "B": 1093,
+        "I": 913,
+        "O": 38051
+      },
+      "tags_skill": {
+        "B": 1070,
+        "I": 3797,
+        "O": 35190
+      }
+    },
+    "rows": 3174,
+    "token_counts": {
+      "tags_knowledge": 40057,
+      "tags_skill": 40057
+    }
+  },
+  "test": {
+    "columns": [
+      "idx",
+      "tokens",
+      "tags_skill",
+      "tags_knowledge",
+      "source"
+    ],
+    "label_counts": {
+      "tags_knowledge": {
+        "B": 1174,
+        "I": 914,
+        "O": 40698
+      },
+      "tags_skill": {
+        "B": 1090,
+        "I": 3136,
+        "O": 38560
+      }
+    },
+    "rows": 3569,
+    "token_counts": {
+      "tags_knowledge": 42786,
+      "tags_skill": 42786
+    }
+  },
+  "train": {
+    "columns": [
+      "idx",
+      "tokens",
+      "tags_skill",
+      "tags_knowledge",
+      "source"
+    ],
+    "label_counts": {
+      "tags_knowledge": {
+        "B": 2969,
+        "I": 2596,
+        "O": 87888
+      },
+      "tags_skill": {
+        "B": 2221,
+        "I": 7850,
+        "O": 83382
+      }
+    },
+    "rows": 4800,
+    "token_counts": {
+      "tags_knowledge": 93453,
+      "tags_skill": 93453
+    }
+  }
+}
