@@ -8,3 +8,4 @@ __pycache__/
 .Rhistory
 .env
 .cache/
+data/benchmarks/esco/*.zip
