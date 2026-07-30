@@ -6,7 +6,7 @@ import json
 from pathlib import Path
 from typing import Sequence
 
-from src.esco.ranker import load_span_ranker, rank_candidate_texts
+from src.esco.ranker import load_span_ranker, rank_candidate_texts, rank_span_candidates
 from src.extraction.lexicon_baseline import build_lexicon_index, load_esco_skills, match_span_detail
 
 
@@ -45,6 +45,8 @@ def _evaluate_rows(rows: list[dict[str, str]], system: str, ranker, lexicon_inde
         elif system == "baseline2":
             scores, indices = rank_candidate_texts([span_text], ranker, top_k=5)
             predictions = [ranker.artifacts.concept_uris[idx] for idx in indices[0] if idx >= 0]
+        elif system == "proposed":
+            predictions = [candidate["concept_uri"] for candidate in rank_span_candidates(span_text, ranker, lexicon_index=lexicon_index, top_k=5)]
         else:
             raise ValueError(f"Unsupported system: {system}")
 
@@ -68,7 +70,7 @@ def main() -> None:
     parser.add_argument("--embeddings", type=Path, default=Path("models/esco_embeddings.npy"))
     parser.add_argument("--index", type=Path, default=Path("models/esco_faiss.index"))
     parser.add_argument("--labels", type=Path, default=Path("models/esco_embedding_labels.json"))
-    parser.add_argument("--system", choices=["baseline1", "baseline2"], default="baseline2")
+    parser.add_argument("--system", choices=["baseline1", "baseline2", "proposed"], default="baseline2")
     parser.add_argument("--output", type=Path, default=Path("results/esco_linking_metrics.json"))
     args = parser.parse_args()
 

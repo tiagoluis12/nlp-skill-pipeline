@@ -10,7 +10,7 @@ import numpy as np
 from sklearn.feature_extraction.text import HashingVectorizer
 from spacy.lang.en.stop_words import STOP_WORDS
 
-from src.extraction.lexicon_baseline import normalize_text
+from src.extraction.lexicon_baseline import build_lexicon_index, load_esco_skills, match_span_detail, normalize_text
 
 
 DEFAULT_MODEL_NAME = "all-mpnet-base-v2"
@@ -33,6 +33,7 @@ class CandidateSpan:
     score: float
     predicted_uri: str | None
     top5: list[dict[str, object]]
+    method: str = "embedding"
 
 
 @dataclass(frozen=True)
@@ -135,6 +136,11 @@ def load_span_ranker(
     return SpanRanker(artifacts=artifacts, model=model, model_name=model_name)
 
 
+def load_lexicon_index(skills_csv: Path) -> dict[str, str]:
+    skills = load_esco_skills(skills_csv)
+    return build_lexicon_index(skills)
+
+
 def _token_is_content(token: str) -> bool:
     normalized = normalize_text(token)
     return bool(normalized) and normalized not in STOP_WORDS and any(ch.isalnum() for ch in normalized)
@@ -199,10 +205,52 @@ def _top_k_candidates(
                     "label": ranker.artifacts.labels[idx],
                     "concept_uri": ranker.artifacts.concept_uris[idx],
                     "score": float(score),
+                    "method": "embedding",
                 }
             )
         output.append(candidates)
     return output
+
+
+def rank_span_candidates(
+    span_text: str,
+    ranker: SpanRanker,
+    lexicon_index: dict[str, str] | None = None,
+    top_k: int = 5,
+    score_cutoff: int = 85,
+) -> list[dict[str, object]]:
+    candidates: list[dict[str, object]] = []
+    seen_uris: set[str] = set()
+
+    if lexicon_index is not None:
+        match = match_span_detail(span_text, lexicon_index, score_cutoff=score_cutoff)
+        if match.concept_uri is not None:
+            method = match.method if match.method in {"exact", "fuzzy"} else "exact"
+            candidates.append(
+                {
+                    "rank": 1,
+                    "label": match.matched_label or span_text,
+                    "concept_uri": match.concept_uri,
+                    "score": 1.0,
+                    "method": method,
+                }
+            )
+            seen_uris.add(match.concept_uri)
+
+    if len(candidates) < top_k:
+        scores, indices = rank_candidate_texts([span_text], ranker, top_k=top_k)
+        for candidate in _top_k_candidates(scores, indices, ranker)[0]:
+            concept_uri = str(candidate["concept_uri"])
+            if concept_uri in seen_uris:
+                continue
+            candidates.append(candidate)
+            seen_uris.add(concept_uri)
+            if len(candidates) >= top_k:
+                break
+
+    for index, candidate in enumerate(candidates, start=1):
+        candidate["rank"] = index
+    return candidates[:top_k]
 
 
 def rank_document_candidates(

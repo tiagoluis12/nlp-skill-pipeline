@@ -9,3 +9,7 @@ __pycache__/
 .env
 .cache/
 data/benchmarks/esco/*.zip
+data/benchmarks/skillspan/cache-*.arrow
+data/benchmarks/skillspan/*/cache-*.arrow
+models/ner/*
+!models/ner/README.md
