@@ -282,6 +282,12 @@ def generate_audit_traces(
     manifest = write_audit_traces(traces, output_dir)
     manifest["gold_documents"] = gold_report["documents"]
     manifest["gold_source"] = gold_report["source"]
+    manifest["retrieval"] = {
+        "model": ranker.artifacts.model_name,
+        "index": type(ranker.artifacts.index).__name__,
+        "embedding_shape": list(ranker.artifacts.embeddings.shape),
+    }
+    (output_dir / "manifest.json").write_text(json.dumps(manifest, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     return manifest
 
 

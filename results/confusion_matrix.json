@@ -1,0 +1,88 @@
+{
+  "all_pair_count": 103,
+  "correct_top1": 175,
+  "coverage_gap_excluded": 323,
+  "misclassification_pairs": [
+    {
+      "count": 4,
+      "gold_label": "cloud technologies",
+      "gold_uri": "http://data.europa.eu/esco/skill/bd14968e-e409-45af-b362-3495ed7b10e0",
+      "predicted_label": "design cloud architecture",
+      "predicted_uri": "http://data.europa.eu/esco/skill/11430d93-c835-48ed-8e70-285fa69c9ae6"
+    },
+    {
+      "count": 4,
+      "gold_label": "building automation",
+      "gold_uri": "http://data.europa.eu/esco/skill/6709e92c-7546-46a4-aa57-5e951bd4cb0f",
+      "predicted_label": "call-centre technologies",
+      "predicted_uri": "http://data.europa.eu/esco/skill/e13b734a-218c-434a-a7cc-febac6d24ef3"
+    },
+    {
+      "count": 3,
+      "gold_label": "ICT infrastructure",
+      "gold_uri": "http://data.europa.eu/esco/skill/d0c6d77e-cb25-4770-bf77-2073fc5f7523",
+      "predicted_label": "cloud technologies",
+      "predicted_uri": "http://data.europa.eu/esco/skill/bd14968e-e409-45af-b362-3495ed7b10e0"
+    },
+    {
+      "count": 3,
+      "gold_label": "developing solutions",
+      "gold_uri": "http://data.europa.eu/esco/skill/S1.9.1",
+      "predicted_label": "design pipelines with different coating solutions",
+      "predicted_uri": "http://data.europa.eu/esco/skill/3ef76cca-f763-4ec0-b4b7-71971e0f35ff"
+    },
+    {
+      "count": 2,
+      "gold_label": "plan test flights",
+      "gold_uri": "http://data.europa.eu/esco/skill/d58ac822-ebcb-4932-935b-54ea816d4e32",
+      "predicted_label": "plan software testing",
+      "predicted_uri": "http://data.europa.eu/esco/skill/5d74614d-32c8-4ca4-9818-6980e52424b1"
+    },
+    {
+      "count": 2,
+      "gold_label": "provide improvement strategies",
+      "gold_uri": "http://data.europa.eu/esco/skill/d4cc5022-7801-4885-bcff-166552788d35",
+      "predicted_label": "identify process improvements",
+      "predicted_uri": "http://data.europa.eu/esco/skill/958b8802-ec3e-4813-97f7-6c8f48610dbd"
+    },
+    {
+      "count": 2,
+      "gold_label": "data analytics",
+      "gold_uri": "http://data.europa.eu/esco/skill/97bd1c21-66b2-4b7e-ad0f-e3cda590e378",
+      "predicted_label": "data engineering",
+      "predicted_uri": "http://data.europa.eu/esco/skill/48db96bf-3314-45c6-bad8-fdb6e20e5639"
+    },
+    {
+      "count": 2,
+      "gold_label": "draw up risk assessment",
+      "gold_uri": "http://data.europa.eu/esco/skill/594bd121-9614-4e87-9ecf-6ccb95507efe",
+      "predicted_label": "risk identification",
+      "predicted_uri": "http://data.europa.eu/esco/skill/8744f28f-59a9-45af-8ef6-6944cb5a1473"
+    },
+    {
+      "count": 1,
+      "gold_label": "Taleo",
+      "gold_uri": "http://data.europa.eu/esco/skill/d87fe0be-9055-4a76-a444-e98b5bfad9d8",
+      "predicted_label": "military code",
+      "predicted_uri": "http://data.europa.eu/esco/skill/3a6b6485-8775-44b9-aba8-0ae06a53ce2f"
+    },
+    {
+      "count": 1,
+      "gold_label": "tend jigger machines",
+      "gold_uri": "http://data.europa.eu/esco/skill/49a527c4-f775-41ac-b886-5e6eff66bee4",
+      "predicted_label": "Taleo",
+      "predicted_uri": "http://data.europa.eu/esco/skill/d87fe0be-9055-4a76-a444-e98b5bfad9d8"
+    }
+  ],
+  "no_prediction": 0,
+  "retrieval": {
+    "embedding_shape": [
+      15163,
+      768
+    ],
+    "index": "NumpyIndex",
+    "model": "all-mpnet-base-v2"
+  },
+  "reviewed_spans": 601,
+  "wrong_top1": 426
+}

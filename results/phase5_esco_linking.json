@@ -1,0 +1,37 @@
+{
+  "baseline2_test_threshold": 0.6,
+  "retrieval": {
+    "embedding_shape": [
+      15163,
+      768
+    ],
+    "index": "NumpyIndex",
+    "model": "all-mpnet-base-v2"
+  },
+  "review_csv": "results/gold_esco_review_priority.csv",
+  "reviewed_rows": 601,
+  "systems": {
+    "Baseline1_Lexicon": {
+      "acc_at_1": 0.21963394342762063,
+      "acc_at_3": 0.21963394342762063,
+      "documents": 601,
+      "macro_f1": 0.1842089093701997,
+      "mrr": 0.21963394342762063
+    },
+    "Baseline2_Embedding": {
+      "acc_at_1": 0.18469217970049917,
+      "acc_at_3": 0.31281198003327787,
+      "documents": 601,
+      "macro_f1": 0.17970491955302084,
+      "mrr": 0.2575429839156961
+    },
+    "Proposed_NER_Ranking": {
+      "acc_at_1": 0.2911813643926789,
+      "acc_at_3": 0.40931780366056575,
+      "documents": 601,
+      "macro_f1": 0.24618634575351606,
+      "mrr": 0.35618413754853023
+    }
+  },
+  "threshold_source": "results/b2_threshold_search.json"
+}

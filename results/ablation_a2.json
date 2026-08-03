@@ -1,0 +1,68 @@
+{
+  "ablation": "A2",
+  "dataset": "gold",
+  "delta_vs_full_pipeline": {
+    "end_to_end_coverage": 0.448,
+    "esco_acc_at_1": 0.0,
+    "esco_acc_at_3": 0.0,
+    "mrr": 0.0,
+    "span_exact_f1": 0.3485201793721972,
+    "span_relaxed_f1": -0.2221294768997702
+  },
+  "description": "Baseline 2 noun-phrase spans + full exact/fuzzy and embedding ESCO ranker; NER removed",
+  "end_to_end": {
+    "correct_links_on_exact_spans": 91,
+    "correct_postings": 63,
+    "coverage": 0.504,
+    "exact_gold_spans": 161,
+    "exact_span_link_accuracy": 0.5652173913043478,
+    "postings": 125,
+    "predicted_spans": 2451
+  },
+  "esco_linking_on_reviewed_gold_spans": {
+    "acc_at_1": 0.2911813643926789,
+    "acc_at_3": 0.40931780366056575,
+    "documents": 601,
+    "macro_f1": 0.24618634575351606,
+    "mrr": 0.35618413754853023
+  },
+  "extraction": {
+    "documents": 125,
+    "per_class": {},
+    "span_exact": {
+      "f1": 0.7085201793721972,
+      "fn": 45,
+      "fp": 150,
+      "precision": 0.6124031007751938,
+      "recall": 0.8404255319148937,
+      "tp": 237
+    },
+    "span_relaxed": {
+      "f1": 0.39384010484927917,
+      "fn": 0,
+      "fp": 1850,
+      "precision": 0.2452060383516932,
+      "recall": 1.0,
+      "tp": 601
+    },
+    "token": {
+      "f1": 0.1055045871559633,
+      "precision": 0.065687474500204,
+      "recall": 0.26788685524126454
+    }
+  },
+  "full_pipeline_reference": {
+    "dataset": "gold",
+    "end_to_end_coverage": 0.056,
+    "esco_acc_at_1": 0.2911813643926789,
+    "esco_acc_at_3": 0.40931780366056575,
+    "mrr": 0.35618413754853023,
+    "span_exact_f1": 0.36000000000000004,
+    "span_relaxed_f1": 0.6159695817490494,
+    "system": "Proposed_NER_Ranking"
+  },
+  "interpretation": "The reviewed-gold linking scores are expected to equal the full pipeline because both use the same ranker on the same reviewed spans. The end-to-end coverage isolates the effect of replacing NER with Baseline 2 noun-phrase spans.",
+  "review_csv": "results/gold_esco_review_priority.csv",
+  "threshold": 0.6,
+  "threshold_source": "results/b2_threshold_search.json"
+}

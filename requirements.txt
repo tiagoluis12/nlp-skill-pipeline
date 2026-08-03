@@ -13,6 +13,7 @@ seqeval==1.2.2
 rapidfuzz==3.9.6
 faiss-cpu==1.8.0.post1
 beautifulsoup4==4.12.3
+Pillow==10.4.0
 requests==2.32.3
 numpy==1.26.4
 tqdm==4.66.5

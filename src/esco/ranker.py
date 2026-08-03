@@ -14,6 +14,7 @@ from src.extraction.lexicon_baseline import build_lexicon_index, load_esco_skill
 
 
 DEFAULT_MODEL_NAME = "all-mpnet-base-v2"
+DEFAULT_PROJECT_HF_CACHE = Path(".cache/huggingface/hub")
 
 
 @dataclass(frozen=True)
@@ -87,21 +88,39 @@ def _load_label_metadata(labels_path: Path) -> tuple[list[str], list[str]]:
     return list(payload["labels"]), list(payload["concept_uris"])
 
 
-def _load_sentence_transformer(model_name: str):
+def _load_sentence_transformer(model_path: Path):
     from sentence_transformers import SentenceTransformer
 
-    return SentenceTransformer(model_name, device="cpu", local_files_only=True)
+    return SentenceTransformer(str(model_path), device="cpu", local_files_only=True)
 
 
-def _sentence_transformer_is_cached(model_name: str) -> bool:
+def _model_cache_directory(model_name: str) -> str:
+    repo_id = model_name if "/" in model_name else f"sentence-transformers/{model_name}"
+    return f"models--{repo_id.replace('/', '--')}"
+
+
+def resolve_local_sentence_transformer(
+    model_name: str,
+    project_cache: Path = DEFAULT_PROJECT_HF_CACHE,
+) -> Path | None:
+    """Return a locally available model snapshot without making a network request."""
+    direct_path = Path(model_name)
+    if direct_path.is_dir():
+        return direct_path
+
+    snapshots = project_cache / _model_cache_directory(model_name) / "snapshots"
+    if snapshots.is_dir():
+        available = sorted(path for path in snapshots.iterdir() if path.is_dir())
+        if available:
+            return available[-1]
+
     from huggingface_hub import snapshot_download
 
     repo_id = model_name if "/" in model_name else f"sentence-transformers/{model_name}"
     try:
-        snapshot_download(repo_id=repo_id, local_files_only=True)
+        return Path(snapshot_download(repo_id=repo_id, local_files_only=True))
     except Exception:
-        return False
-    return True
+        return None
 
 
 def load_span_ranker(
@@ -110,17 +129,19 @@ def load_span_ranker(
     labels_path: Path = Path("models/esco_embedding_labels.json"),
     model_name: str = DEFAULT_MODEL_NAME,
 ) -> SpanRanker:
-    if _sentence_transformer_is_cached(model_name):
-        model = _load_sentence_transformer(model_name)
-        from src.esco.embedding_index import load_embedding_artifacts
-
-        artifacts = load_embedding_artifacts(embeddings_path, index_path, labels_path)
+    model_path = resolve_local_sentence_transformer(model_name)
+    if model_path is not None:
+        model = _load_sentence_transformer(model_path)
+        labels, concept_uris = _load_label_metadata(labels_path)
+        embeddings = np.load(embeddings_path).astype(np.float32, copy=False)
+        # Exact inner-product search over normalized vectors is cosine retrieval.
+        # It avoids FAISS shared-memory failures observed on the macOS host.
         artifacts = RankerArtifacts(
-            model_name=artifacts.model_name,
-            labels=list(artifacts.labels),
-            concept_uris=list(artifacts.concept_uris),
-            embeddings=np.asarray(artifacts.embeddings, dtype=np.float32),
-            index=artifacts.faiss_index,
+            model_name=model_name,
+            labels=labels,
+            concept_uris=concept_uris,
+            embeddings=embeddings,
+            index=NumpyIndex(embeddings),
         )
     else:
         labels, concept_uris = _load_label_metadata(labels_path)

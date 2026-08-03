@@ -1,0 +1,76 @@
+{
+  "ablation": "A1",
+  "dataset": "gold",
+  "delta_vs_full_pipeline": {
+    "end_to_end_coverage": -0.024,
+    "esco_acc_at_1": -0.07154742096505826,
+    "esco_acc_at_3": -0.18968386023294512,
+    "mrr": -0.1365501941209096,
+    "span_exact_f1": 0.0,
+    "span_relaxed_f1": 0.0
+  },
+  "description": "NER extractor + exact/fuzzy ESCO lexicon matching; embedding ranking removed",
+  "end_to_end": {
+    "correct_postings": 4,
+    "coverage": 0.032,
+    "lexicon_matched_spans": 206,
+    "postings": 125,
+    "predicted_spans": 714
+  },
+  "esco_linking": {
+    "acc_at_1": 0.21963394342762063,
+    "acc_at_3": 0.21963394342762063,
+    "documents": 601,
+    "macro_f1": 0.1842089093701997,
+    "mrr": 0.21963394342762063
+  },
+  "extraction": {
+    "documents": 125,
+    "per_class": {
+      "SKILL_TECH": {
+        "f1": 0.03773584905660377,
+        "precision": 0.046798029556650245,
+        "recall": 0.03161397670549085,
+        "support": 601.0
+      },
+      "SKILL_TRANS": {
+        "f1": 0.0,
+        "precision": 0.0,
+        "recall": 0.0,
+        "support": 0.0
+      }
+    },
+    "span_exact": {
+      "f1": 0.36000000000000004,
+      "fn": 147,
+      "fp": 333,
+      "precision": 0.28846153846153844,
+      "recall": 0.4787234042553192,
+      "tp": 135
+    },
+    "span_relaxed": {
+      "f1": 0.6159695817490494,
+      "fn": 196,
+      "fp": 309,
+      "precision": 0.5672268907563025,
+      "recall": 0.6738768718801996,
+      "tp": 405
+    },
+    "token": {
+      "f1": 0.028897338403041824,
+      "precision": 0.02661064425770308,
+      "recall": 0.03161397670549085
+    }
+  },
+  "full_pipeline_reference": {
+    "dataset": "gold",
+    "end_to_end_coverage": 0.056,
+    "esco_acc_at_1": 0.2911813643926789,
+    "esco_acc_at_3": 0.40931780366056575,
+    "mrr": 0.35618413754853023,
+    "span_exact_f1": 0.36000000000000004,
+    "span_relaxed_f1": 0.6159695817490494,
+    "system": "Proposed_NER_Ranking"
+  },
+  "review_csv": "results/gold_esco_review_priority.csv"
+}
