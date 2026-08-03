@@ -61,6 +61,22 @@ def test_resolve_model_bundle_uses_offline_fallback(monkeypatch) -> None:
     assert bundle.model.config.num_labels == len(ner_model.LABEL_NAMES)
 
 
+def test_load_checkpoint_bundle_is_strict(monkeypatch, tmp_path) -> None:
+    checkpoint = tmp_path / "checkpoint"
+    checkpoint.mkdir()
+    tokenizer = object()
+    model = object()
+    monkeypatch.setattr(ner_model.AutoTokenizer, "from_pretrained", lambda *args, **kwargs: tokenizer)
+    monkeypatch.setattr(ner_model.AutoModelForTokenClassification, "from_pretrained", lambda *args, **kwargs: model)
+
+    bundle = ner_model.load_checkpoint_bundle(checkpoint)
+
+    assert bundle.model_name == str(checkpoint)
+    assert bundle.tokenizer is tokenizer
+    assert bundle.model is model
+    assert bundle.offline_fallback is False
+
+
 def test_evaluate_records_reports_gold_source() -> None:
     records = [
         {

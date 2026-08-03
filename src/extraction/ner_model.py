@@ -248,6 +248,29 @@ def resolve_model_bundle(
     )
 
 
+def load_checkpoint_bundle(checkpoint_dir: Path = DEFAULT_OUTPUT_DIR) -> NerBundle:
+    """Load the trained NER checkpoint for inference-only consumers.
+
+    This is intentionally separate from ``resolve_model_bundle`` so training
+    always starts from the configured base model rather than reusing a prior
+    output checkpoint or silently falling back to an untrained model.
+    """
+    checkpoint_dir = Path(checkpoint_dir)
+    if not checkpoint_dir.is_dir():
+        raise FileNotFoundError(
+            f"Trained NER checkpoint not found: {checkpoint_dir}. "
+            "Train the model or provide the released checkpoint before running inference."
+        )
+    tokenizer = AutoTokenizer.from_pretrained(str(checkpoint_dir), local_files_only=True, use_fast=True)
+    model = AutoModelForTokenClassification.from_pretrained(str(checkpoint_dir), local_files_only=True)
+    return NerBundle(
+        model_name=str(checkpoint_dir),
+        tokenizer=tokenizer,
+        model=model,
+        offline_fallback=False,
+    )
+
+
 def tokenize_and_align_labels(
     examples: dict[str, list[Sequence[str]]],
     tokenizer: PreTrainedTokenizerBase,

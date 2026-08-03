@@ -10,10 +10,8 @@ import streamlit as st
 from src.esco.ranker import load_lexicon_index, load_span_ranker, rank_span_candidates
 from src.extraction.ner_model import (
     SpanPrediction,
-    add_combined_tags,
-    load_skillspan_dataset,
+    load_checkpoint_bundle,
     predict_text_spans,
-    resolve_model_bundle,
 )
 
 
@@ -74,8 +72,7 @@ def build_inspection_rows(
 
 @st.cache_resource(show_spinner=False)
 def load_demo_resources() -> dict[str, object]:
-    dataset = add_combined_tags(load_skillspan_dataset())
-    bundle = resolve_model_bundle(dataset, allow_offline_fallback=True)
+    bundle = load_checkpoint_bundle()
     ranker = load_span_ranker(ESCO_EMBEDDINGS, ESCO_INDEX, ESCO_LABELS)
     lexicon_index = load_lexicon_index(ESCO_CSV)
     return {

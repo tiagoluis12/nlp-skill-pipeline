@@ -34,7 +34,7 @@ def clean_file(input_path: Path, output_path: Path) -> dict[str, int]:
                         "role_type": record.get("role_type"),
                         "country": record.get("country"),
                         "sentences": sentences,
-                        "raw_text": raw_text,
+                        "raw_text": cleaned_text,
                     },
                     ensure_ascii=False,
                 )

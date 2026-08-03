@@ -2,15 +2,12 @@
 
 Development and evaluation of an NLP pipeline for extracting and classifying skill requirements from entry-level technology job postings.
 
-## Phase 1 Status
+## Current Status
 
-The repository now contains the Phase 1 scaffold:
-
-- project directory structure
-- pinned Python requirements
-- benchmark download helpers
-- preprocessing utilities
-- draft annotation guidelines
+Phases 1-5 are implemented, with the final audit gates documented in
+`docs/phase5_status.md`. Phase 6 is not yet release-ready: the corpus geography,
+ESCO gold-label adjudication, privacy scrub, and model-artifact release still
+require completion.
 
 ## Layout
 
@@ -44,21 +41,23 @@ set -a && . ./.env && set +a
 - `python -m src.preprocess.extract_esco_skills --rdf-zip data/benchmarks/esco/esco_v1.2.0_classification_rdf.zip --output-csv data/benchmarks/esco/skills_en.csv`
 - `python -m src.preprocess.inspect_benchmarks`
 
-## Phase 2 Entry Point
+## Phase 2 Collection Entry Point
 
-- `set -a && . ./.env && set +a && .venv/bin/python -m src.preprocess.collect --role-type all --output-dir data/raw --country gb --where "Republic of Ireland"`
+- Intended Ireland collection command: `set -a && . ./.env && set +a && .venv/bin/python -m src.preprocess.collect --role-type all --output-dir data/raw --country gb --where "Republic of Ireland"`
+- Verify the resulting records contain the intended country/location before annotation. The committed corpus currently contains US records and must not be described as Irish-market data.
 
 ## Phase 2 Logging
 
 - `.venv/bin/python -m src.preprocess.corpus_stats --raw-dir data/raw --clean-dir data/clean --output results/corpus_stats.json`
+- Before committing collected records, scrub source JSONL with `.venv/bin/python -m src.preprocess.scrub_pii --input-dir data/raw --output-dir /tmp/nlp-skill-pipeline-raw-scrubbed` and replace only after verifying the output.
 
 ## Phase 3 Entry Point
 
 - `.venv/bin/python -m src.extraction.lexicon_baseline --skills-csv data/benchmarks/esco/skills_en.csv --output-index models/esco_lexicon_index.json --query "root cause analysis" --query "cloud infrastructure support"`
 
-## Phase 3 Status
+## Phase 3-5 Outputs
 
-Phase 3 is implemented through the baseline comparison layer:
+The baseline, proposed pipeline, ablation, taxonomy, and comparison artefacts are committed:
 
 - `3.1` ESCO lexicon index built and tested
 - `3.2` Baseline 1 evaluated on `SKILLSPAN` test
@@ -80,12 +79,8 @@ Current outputs:
 - `results/gold_esco_review.csv`
 - `results/gold_esco_review_priority.csv`
 
-Note:
-
-- Best Baseline 2 threshold on `SKILLSPAN` dev is `0.60`; on `SKILLSPAN` test it is `0.65` under the current fallback encoder.
-- The current gold annotations are span-only, so ESCO `Acc@1`, `Acc@3`, and `MRR` are not computable yet without concept-linked gold labels.
-- `results/gold_esco_review_priority.csv` is the review file for filling those concept URIs.
-- If the MPNet model is not cached locally, the ranker falls back to a deterministic offline encoder on this machine. Re-run the embedding steps with the real cached model before final dissertation freeze.
+The final reported Phase 5 metrics use the project-local MPNet snapshot. Do not
+use the deterministic hashing fallback for final evaluation.
 
 ## Phase 4 Status
 
@@ -93,5 +88,14 @@ See [docs/phase4_status.md](</Users/tiagoluis/Developer/nlp-skill-pipeline/docs/
 
 ## Label Studio
 
-- `BASE_DATA_DIR=.cache/label-studio LATEST_VERSION_CHECK=false .venv/bin/label-studio --help`
-- `BASE_DATA_DIR=.cache/label-studio LATEST_VERSION_CHECK=false .venv/bin/label-studio start`
+Label Studio should run in a separate environment because its current dependency
+requirements conflict with the pinned ML environment:
+
+```bash
+python -m venv .labelstudio-venv
+source .labelstudio-venv/bin/activate
+pip install -r requirements-label-studio.txt
+label-studio start
+```
+
+The main `.venv` is for model training, evaluation, and tests.

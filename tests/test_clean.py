@@ -59,6 +59,7 @@ def test_clean_file_preserves_expected_keys(tmp_path) -> None:
     assert summary["output_rows"] == 1
     assert len(lines) == 1
     row = json.loads(lines[0])
-    assert row["raw_text"].startswith("<p>Email test@example.com")
+    assert not row["raw_text"].startswith("<p>")
+    assert "test@example.com" not in row["raw_text"]
     assert "[EMAIL]" in " ".join(row["sentences"])
     assert "Python required" in " ".join(row["sentences"])

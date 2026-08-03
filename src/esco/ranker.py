@@ -128,8 +128,14 @@ def load_span_ranker(
     index_path: Path = Path("models/esco_faiss.index"),
     labels_path: Path = Path("models/esco_embedding_labels.json"),
     model_name: str = DEFAULT_MODEL_NAME,
+    allow_fallback: bool = True,
 ) -> SpanRanker:
     model_path = resolve_local_sentence_transformer(model_name)
+    if model_path is None and not allow_fallback:
+        raise FileNotFoundError(
+            f"Sentence-transformer model is not available locally: {model_name}. "
+            "Download or release the model before running the integration gate."
+        )
     if model_path is not None:
         model = _load_sentence_transformer(model_path)
         labels, concept_uris = _load_label_metadata(labels_path)

@@ -13,7 +13,7 @@ os.environ.setdefault("OMP_NUM_THREADS", "1")
 os.environ.setdefault("MKL_NUM_THREADS", "1")
 
 from src.esco.ranker import load_lexicon_index, load_span_ranker, rank_span_candidates
-from src.extraction.ner_model import add_combined_tags, load_skillspan_dataset, predict_text_spans, resolve_model_bundle
+from src.extraction.ner_model import load_checkpoint_bundle, predict_text_spans
 
 
 DEFAULT_CLEAN_DIR = Path("data/clean")
@@ -26,7 +26,7 @@ DEFAULT_INDEX = Path("models/esco_faiss.index")
 DEFAULT_LABELS = Path("models/esco_embedding_labels.json")
 DEFAULT_PER_ROLE = 4
 ROLE_ORDER = ("cloud_support", "cybersecurity", "data_analyst", "qa_engineer", "software_dev")
-INTEGRATION_RANKER_MODEL_NAME = "integration-hashing-fallback"
+INTEGRATION_RANKER_MODEL_NAME = "all-mpnet-base-v2"
 
 
 def _load_jsonl(path: Path) -> list[dict[str, object]]:
@@ -194,9 +194,14 @@ def run_integration_gate(
     per_role: int = DEFAULT_PER_ROLE,
     top_k: int = 5,
 ) -> dict[str, object]:
-    dataset = add_combined_tags(load_skillspan_dataset())
-    bundle = resolve_model_bundle(dataset, allow_offline_fallback=True)
-    ranker = load_span_ranker(embeddings, index, labels, model_name=INTEGRATION_RANKER_MODEL_NAME)
+    bundle = load_checkpoint_bundle()
+    ranker = load_span_ranker(
+        embeddings,
+        index,
+        labels,
+        model_name=INTEGRATION_RANKER_MODEL_NAME,
+        allow_fallback=False,
+    )
     lexicon_index = load_lexicon_index(esco_csv)
 
     records = select_unseen_postings(clean_dir=clean_dir, gold_jsonl=gold_jsonl, per_role=per_role)

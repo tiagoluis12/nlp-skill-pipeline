@@ -67,8 +67,8 @@ def main() -> None:
             if not line.strip():
                 continue
             record = json.loads(line)
-            raw_text = record.get("raw_text", "")
-            sentences = clean_text(raw_text, nlp)
+            source_text = record.get("raw_text", "")
+            sentences = clean_text(source_text, nlp)
             cleaned_text = " ".join(sentences)
             if cleaned_text in seen:
                 continue
@@ -77,7 +77,7 @@ def main() -> None:
                 "id": record.get("id"),
                 "role_type": record.get("role_type"),
                 "sentences": sentences,
-                "raw_text": raw_text,
+                "raw_text": cleaned_text,
             }
             dst.write(json.dumps(out, ensure_ascii=False) + "\n")
 
