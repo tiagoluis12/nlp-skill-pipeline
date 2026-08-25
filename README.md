@@ -46,6 +46,14 @@ set -a && . ./.env && set +a
 - Intended Ireland collection command: `set -a && . ./.env && set +a && .venv/bin/python -m src.preprocess.collect --role-type all --output-dir data/raw --country gb --where "Republic of Ireland"`
 - Verify the resulting records contain the intended country/location before annotation. The committed corpus currently contains US records and must not be described as Irish-market data.
 
+## Irish Geography-Correction Corpus
+
+The Irish geography-correction sample has an approved target of 115 postings with
+the availability-constrained allocation documented in
+[docs/irish_corpus_sampling_decision.md](</Users/tiagoluis/Developer/nlp-skill-pipeline/docs/irish_corpus_sampling_decision.md>).
+The original 125-posting gold corpus and Phase 5 outputs remain historical
+evaluation artefacts; they are not silently relabelled as Irish data.
+
 ## Phase 2 Logging
 
 - `.venv/bin/python -m src.preprocess.corpus_stats --raw-dir data/raw --clean-dir data/clean --output results/corpus_stats.json`
@@ -95,7 +103,12 @@ requirements conflict with the pinned ML environment:
 python -m venv .labelstudio-venv
 source .labelstudio-venv/bin/activate
 pip install -r requirements-label-studio.txt
-label-studio start
+BASE_DATA_DIR="$PWD/.labelstudio-data" \
+LABEL_STUDIO_DISABLE_UPDATE_CHECK=true \
+label-studio start --no-browser \
+  --internal-host 127.0.0.1 \
+  --host http://127.0.0.1:8080 \
+  --port 8080
 ```
 
 The main `.venv` is for model training, evaluation, and tests.

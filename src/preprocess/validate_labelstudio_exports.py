@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 from collections import Counter
 from pathlib import Path
@@ -77,6 +78,15 @@ def validate_exports(paths: list[Path], expected_unique_tasks: int | None = None
             errors.append(f"{report['path']}: no span annotations were exported")
 
     if len(reports) > 1:
+        hashes = [hashlib.sha256(path.read_bytes()).hexdigest() for path in paths]
+        for index, current_hash in enumerate(hashes):
+            for other_index in range(index):
+                if current_hash == hashes[other_index]:
+                    errors.append(
+                        f"{paths[index]} and {paths[other_index]} are byte-for-byte identical; "
+                        "independent annotator exports are required"
+                    )
+
         base_keys = set(task_key(row) for row in load_export(paths[0]))
         for other in paths[1:]:
             other_keys = set(task_key(row) for row in load_export(other))

@@ -1,0 +1,20 @@
+{
+  "corpus_output": "data/clean/irish_final_115.jsonl",
+  "corpus_records": 115,
+  "corpus_role_counts": {
+    "cloud_support": 24,
+    "cybersecurity": 23,
+    "data_analyst": 24,
+    "qa_engineer": 21,
+    "software_dev": 23
+  },
+  "pilot_output": "data/annotated/irish_pilot_labelstudio.json",
+  "pilot_records": 30,
+  "pilot_role_counts": {
+    "cloud_support": 6,
+    "cybersecurity": 6,
+    "data_analyst": 6,
+    "qa_engineer": 6,
+    "software_dev": 6
+  }
+}

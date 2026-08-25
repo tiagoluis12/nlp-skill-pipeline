@@ -7,6 +7,8 @@ __pycache__/
 .DS_Store
 .Rhistory
 .env
+.labelstudio-venv/
+.labelstudio-data/
 .cache/
 data/benchmarks/esco/*.zip
 data/benchmarks/skillspan/cache-*.arrow
