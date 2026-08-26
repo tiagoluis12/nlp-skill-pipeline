@@ -280,6 +280,66 @@ def rank_span_candidates(
     return candidates[:top_k]
 
 
+def rank_span_candidates_batch(
+    span_texts: Sequence[str],
+    ranker: SpanRanker,
+    lexicon_index: dict[str, str] | None = None,
+    top_k: int = 5,
+    score_cutoff: int = 85,
+    batch_size: int = 64,
+) -> dict[str, list[dict[str, object]]]:
+    """Rank unique span texts while batching embedding inference."""
+    texts = list(dict.fromkeys(str(text) for text in span_texts))
+    output: dict[str, list[dict[str, object]]] = {text: [] for text in texts}
+    embedding_texts: list[str] = []
+    lexicon_candidates: dict[str, list[dict[str, object]]] = {}
+
+    for text in texts:
+        candidates: list[dict[str, object]] = []
+        if lexicon_index is not None:
+            match = match_span_detail(text, lexicon_index, score_cutoff=score_cutoff)
+            if match.concept_uri is not None:
+                method = match.method if match.method in {"exact", "fuzzy"} else "exact"
+                candidates.append(
+                    {
+                        "rank": 1,
+                        "label": match.matched_label or text,
+                        "concept_uri": match.concept_uri,
+                        "score": 1.0,
+                        "method": method,
+                    }
+                )
+        lexicon_candidates[text] = candidates
+        output[text] = candidates
+        if len(candidates) < top_k:
+            embedding_texts.append(text)
+
+    if embedding_texts:
+        scores, indices = rank_candidate_texts(
+            embedding_texts,
+            ranker,
+            top_k=top_k,
+            batch_size=batch_size,
+        )
+        embedding_candidates = _top_k_candidates(scores, indices, ranker)
+        for text, candidates in zip(embedding_texts, embedding_candidates, strict=True):
+            combined = list(lexicon_candidates[text])
+            seen_uris = {str(candidate["concept_uri"]) for candidate in combined}
+            for candidate in candidates:
+                concept_uri = str(candidate["concept_uri"])
+                if concept_uri in seen_uris:
+                    continue
+                combined.append(candidate)
+                seen_uris.add(concept_uri)
+                if len(combined) >= top_k:
+                    break
+            for rank, candidate in enumerate(combined, start=1):
+                candidate["rank"] = rank
+            output[text] = combined[:top_k]
+
+    return output
+
+
 def rank_document_candidates(
     tokens: Sequence[str],
     ranker: SpanRanker,

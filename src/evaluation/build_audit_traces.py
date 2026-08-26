@@ -12,7 +12,7 @@ os.environ.setdefault("TOKENIZERS_PARALLELISM", "false")
 os.environ.setdefault("OMP_NUM_THREADS", "1")
 os.environ.setdefault("MKL_NUM_THREADS", "1")
 
-from src.esco.ranker import load_lexicon_index, load_span_ranker, rank_span_candidates
+from src.esco.ranker import load_lexicon_index, load_span_ranker, rank_span_candidates_batch
 
 
 DEFAULT_REVIEW_CSV = Path("results/gold_esco_review_priority.csv")
@@ -150,6 +150,19 @@ def build_audit_trace_records(
 ) -> dict[str, list[dict[str, object]]]:
     gold_by_posting = _group_review_rows(gold_rows)
     traces: dict[str, list[dict[str, object]]] = {}
+    all_span_texts: list[str] = []
+    for record in documents:
+        all_span_texts.extend(str(span.get("text") or "") for span in (record.get("predicted_spans") or []))
+        all_span_texts.extend(
+            str(row.get("span_text") or "")
+            for row in gold_by_posting.get(_posting_key(record.get("id")), [])
+        )
+    ranked_candidates = rank_span_candidates_batch(
+        all_span_texts,
+        ranker,
+        lexicon_index=lexicon_index,
+        top_k=top_k,
+    )
 
     for record in documents:
         posting_id = _posting_key(record.get("id"))
@@ -161,12 +174,7 @@ def build_audit_trace_records(
         predicted_spans.sort(key=lambda span: (_int_value(span.get("start", 0)), _int_value(span.get("end", 0))))
 
         for span in predicted_spans:
-            candidates = rank_span_candidates(
-                str(span.get("text") or ""),
-                ranker,
-                lexicon_index=lexicon_index,
-                top_k=top_k,
-            )
+            candidates = ranked_candidates.get(str(span.get("text") or ""), [])
             predicted_uri = str(candidates[0]["concept_uri"]) if candidates else None
             gold_index, gold_row, match_type = _match_gold_span(span, posting_gold_rows)
 
@@ -202,12 +210,7 @@ def build_audit_trace_records(
         for gold_index in sorted(unmatched_gold):
             gold_row = posting_gold_rows[gold_index]
             span_text = str(gold_row.get("span_text") or "")
-            candidates = rank_span_candidates(
-                span_text,
-                ranker,
-                lexicon_index=lexicon_index,
-                top_k=top_k,
-            )
+            candidates = ranked_candidates.get(span_text, [])
             posting_traces.append(
                 {
                     "record_type": "missed_gold_span",

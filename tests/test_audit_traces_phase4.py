@@ -49,14 +49,13 @@ def test_build_audit_trace_records_emits_predicted_and_missed_records(monkeypatc
         },
     ]
 
-    def fake_rank(span_text, ranker, lexicon_index=None, top_k=5):
-        if span_text == "Python testing":
-            return [{"concept_uri": "uri-1", "label": "Python testing", "score": 1.0, "method": "exact"}]
-        if span_text == "teamwork":
-            return [{"concept_uri": "uri-2", "label": "teamwork", "score": 1.0, "method": "exact"}]
-        return []
+    def fake_rank(texts, ranker, lexicon_index=None, top_k=5, **kwargs):
+        return {
+            "Python testing": [{"concept_uri": "uri-1", "label": "Python testing", "score": 1.0, "method": "exact"}],
+            "teamwork": [{"concept_uri": "uri-2", "label": "teamwork", "score": 1.0, "method": "exact"}],
+        }
 
-    monkeypatch.setattr(audit_traces, "rank_span_candidates", fake_rank)
+    monkeypatch.setattr(audit_traces, "rank_span_candidates_batch", fake_rank)
 
     traces = audit_traces.build_audit_trace_records(documents, gold_rows, DummyRanker(), lexicon_index={})
 

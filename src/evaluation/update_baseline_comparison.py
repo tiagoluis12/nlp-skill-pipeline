@@ -58,6 +58,12 @@ def refresh_baseline_comparison(
         "Proposed_Pipeline": (_load_json(proposed_extraction), _load_json(proposed_linking)),
     }
 
+    existing_systems = {row.get("system", "") for row in rows}
+    for system in reports:
+        if system not in existing_systems:
+            rows.append({fieldname: "" for fieldname in (list(rows[0].keys()) if rows else ["system"])})
+            rows[-1]["system"] = system
+
     for row in rows:
         system = row.get("system", "")
         if system not in reports:
