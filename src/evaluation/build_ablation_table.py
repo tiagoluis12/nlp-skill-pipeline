@@ -84,8 +84,14 @@ def _a4_row(report: dict[str, Any]) -> dict[str, str]:
     }
 
 
-def build_ablation_rows(results_dir: Path = DEFAULT_RESULTS_DIR) -> list[dict[str, str]]:
-    reports = {name: _read_report(results_dir / f"ablation_{name.lower()}.json") for name in ("A1", "A2", "A3", "A4")}
+def build_ablation_rows(
+    results_dir: Path = DEFAULT_RESULTS_DIR,
+    input_suffix: str = "",
+) -> list[dict[str, str]]:
+    reports = {
+        name: _read_report(results_dir / f"ablation_{name.lower()}{input_suffix}.json")
+        for name in ("A1", "A2", "A3", "A4")
+    }
     return [
         _full_pipeline_row(reports["A1"]),
         _full_pipeline_row(reports["A2"]),
@@ -97,7 +103,7 @@ def build_ablation_rows(results_dir: Path = DEFAULT_RESULTS_DIR) -> list[dict[st
 def write_ablation_table(rows: list[dict[str, str]], output_path: Path = DEFAULT_OUTPUT) -> None:
     output_path.parent.mkdir(parents=True, exist_ok=True)
     with output_path.open("w", encoding="utf-8", newline="") as handle:
-        writer = csv.DictWriter(handle, fieldnames=FIELDNAMES)
+        writer = csv.DictWriter(handle, fieldnames=FIELDNAMES, lineterminator="\n")
         writer.writeheader()
         writer.writerows(rows)
 
@@ -105,9 +111,14 @@ def write_ablation_table(rows: list[dict[str, str]], output_path: Path = DEFAULT
 def main() -> None:
     parser = argparse.ArgumentParser(description="Build the Phase 5.6 ablation summary table.")
     parser.add_argument("--results-dir", type=Path, default=DEFAULT_RESULTS_DIR)
+    parser.add_argument(
+        "--input-suffix",
+        default="",
+        help="Suffix added to each input report name, for example '_irish'.",
+    )
     parser.add_argument("--output", type=Path, default=DEFAULT_OUTPUT)
     args = parser.parse_args()
-    rows = build_ablation_rows(args.results_dir)
+    rows = build_ablation_rows(args.results_dir, args.input_suffix)
     write_ablation_table(rows, args.output)
     print(json.dumps({"rows": len(rows), "output": str(args.output)}, indent=2, sort_keys=True))
 

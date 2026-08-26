@@ -1,0 +1,88 @@
+{
+  "all_pair_count": 293,
+  "correct_top1": 1102,
+  "coverage_gap_excluded": 9,
+  "misclassification_pairs": [
+    {
+      "count": 18,
+      "gold_label": "work analytically",
+      "gold_uri": "http://data.europa.eu/esco/skill/54173a92-b781-4a3f-880b-70fa3a375417",
+      "predicted_label": "analytical methods in biomedical sciences",
+      "predicted_uri": "http://data.europa.eu/esco/skill/1d58c862-1100-438a-bea7-34e0c2a36055"
+    },
+    {
+      "count": 15,
+      "gold_label": "operating systems",
+      "gold_uri": "http://data.europa.eu/esco/skill/f9a6f35b-01a7-40c9-8b61-b6ee46f97272",
+      "predicted_label": "Kali Linux",
+      "predicted_uri": "http://data.europa.eu/esco/skill/625b57ee-29d4-425b-bf99-9fd54dd021fe"
+    },
+    {
+      "count": 12,
+      "gold_label": "communicate with stakeholders",
+      "gold_uri": "http://data.europa.eu/esco/skill/477173ca-5fc2-406b-9122-95d92811f284",
+      "predicted_label": "engage with stakeholders",
+      "predicted_uri": "http://data.europa.eu/esco/skill/99c4c69a-025c-464f-adda-874c7f107a31"
+    },
+    {
+      "count": 12,
+      "gold_label": "communication",
+      "gold_uri": "http://data.europa.eu/esco/skill/15d76317-c71a-4fa2-aadc-2ecc34e627b7",
+      "predicted_label": "maintain working relationships",
+      "predicted_uri": "http://data.europa.eu/esco/skill/18119ac9-9e43-4da3-8b79-45dd75fe6510"
+    },
+    {
+      "count": 9,
+      "gold_label": "Agile development",
+      "gold_uri": "http://data.europa.eu/esco/skill/dba46f87-0831-49cd-a1c7-340a653c0221",
+      "predicted_label": "ICT project management methodologies",
+      "predicted_uri": "http://data.europa.eu/esco/skill/bec4359e-cb92-468f-a997-8fb28e32fba9"
+    },
+    {
+      "count": 8,
+      "gold_label": "mechanical engineering",
+      "gold_uri": "http://data.europa.eu/esco/skill/9c071f1d-eac3-449d-b004-c14775b5a3b9",
+      "predicted_label": "packaging engineering",
+      "predicted_uri": "http://data.europa.eu/esco/skill/b8ac179c-4a29-4467-9177-031daf1321d6"
+    },
+    {
+      "count": 7,
+      "gold_label": "maintain a central project repository",
+      "gold_uri": "http://data.europa.eu/esco/skill/770d4956-b5e0-4d44-bf42-3a766b232c5d",
+      "predicted_label": "tools for software configuration management",
+      "predicted_uri": "http://data.europa.eu/esco/skill/9d2e926f-53d9-41f5-98f3-19dfaa687f3f"
+    },
+    {
+      "count": 7,
+      "gold_label": "communication, collaboration and creativity",
+      "gold_uri": "http://data.europa.eu/esco/skill/S1.0.0",
+      "predicted_label": "communication, collaboration and creativity",
+      "predicted_uri": "http://data.europa.eu/esco/skill/S1.0"
+    },
+    {
+      "count": 7,
+      "gold_label": "ensure information security",
+      "gold_uri": "http://data.europa.eu/esco/skill/6833e58b-eceb-4599-9375-1b7e6ec64087",
+      "predicted_label": "cyber security",
+      "predicted_uri": "http://data.europa.eu/esco/skill/8088750d-8388-4170-a76f-48354c469c44"
+    },
+    {
+      "count": 7,
+      "gold_label": "data analytics",
+      "gold_uri": "http://data.europa.eu/esco/skill/97bd1c21-66b2-4b7e-ad0f-e3cda590e378",
+      "predicted_label": "unstructured data",
+      "predicted_uri": "http://data.europa.eu/esco/skill/c5e8abde-d2ba-4e8e-a65e-720b71180666"
+    }
+  ],
+  "no_prediction": 0,
+  "retrieval": {
+    "embedding_shape": [
+      15163,
+      768
+    ],
+    "index": "NumpyIndex",
+    "model": "all-mpnet-base-v2"
+  },
+  "reviewed_spans": 1404,
+  "wrong_top1": 302
+}

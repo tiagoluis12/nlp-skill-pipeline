@@ -1,0 +1,4 @@
+{
+  "type": "numpy_exact_inner_product",
+  "embeddings": "models/a4_minilm_irish/esco_embeddings.npy"
+}

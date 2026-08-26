@@ -1,0 +1,76 @@
+{
+  "ablation": "A1",
+  "dataset": "gold",
+  "delta_vs_full_pipeline": {
+    "end_to_end_coverage": -0.011764705882352941,
+    "esco_acc_at_1": -0.6011396011396011,
+    "esco_acc_at_3": -0.7962962962962963,
+    "mrr": -0.7000712250712257,
+    "span_exact_f1": 0.0,
+    "span_relaxed_f1": 0.0
+  },
+  "description": "NER extractor + exact/fuzzy ESCO lexicon matching; embedding ranking removed",
+  "end_to_end": {
+    "correct_postings": 4,
+    "coverage": 0.047058823529411764,
+    "lexicon_matched_spans": 1988,
+    "postings": 85,
+    "predicted_spans": 6903
+  },
+  "esco_linking": {
+    "acc_at_1": 0.18376068376068377,
+    "acc_at_3": 0.18376068376068377,
+    "documents": 1404,
+    "macro_f1": 0.1336165556789676,
+    "mrr": 0.18376068376068377
+  },
+  "extraction": {
+    "documents": 85,
+    "per_class": {
+      "SKILL_TECH": {
+        "f1": 0.0008116883116883117,
+        "precision": 0.000543773790103317,
+        "recall": 0.0016,
+        "support": 1250.0
+      },
+      "SKILL_TRANS": {
+        "f1": 0.002884338044418806,
+        "precision": 0.0015503875968992248,
+        "recall": 0.02066115702479339,
+        "support": 242.0
+      }
+    },
+    "span_exact": {
+      "f1": 0.21400034740316135,
+      "fn": 515,
+      "fp": 4010,
+      "precision": 0.13316039775183744,
+      "recall": 0.5446507515473032,
+      "tp": 616
+    },
+    "span_relaxed": {
+      "f1": 0.3442525312686123,
+      "fn": 47,
+      "fp": 5458,
+      "precision": 0.2093292771258873,
+      "recall": 0.9684986595174263,
+      "tp": 1445
+    },
+    "token": {
+      "f1": 0.0016676593210244192,
+      "precision": 0.0010140518615094887,
+      "recall": 0.004691689008042895
+    }
+  },
+  "full_pipeline_reference": {
+    "dataset": "gold",
+    "end_to_end_coverage": 0.058823529411764705,
+    "esco_acc_at_1": 0.7849002849002849,
+    "esco_acc_at_3": 0.98005698005698,
+    "mrr": 0.8838319088319094,
+    "span_exact_f1": 0.21400034740316135,
+    "span_relaxed_f1": 0.3442525312686123,
+    "system": "Proposed_NER_Ranking"
+  },
+  "review_csv": "results/irish_gold_esco_review_priority.csv"
+}

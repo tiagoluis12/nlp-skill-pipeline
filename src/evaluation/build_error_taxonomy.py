@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+import csv
 import json
 from collections import Counter, defaultdict
 from pathlib import Path
@@ -91,6 +92,7 @@ def analyse_traces(records: list[dict[str, Any]]) -> dict[str, Any]:
     error_records = sum(counts.values())
     return {
         "total_records": len(records),
+        "posting_count": len({str(record.get("posting_id") or "") for record in records if record.get("posting_id")}),
         "correct_records": sum(1 for record in records if record.get("error_category") == "correct"),
         "error_records": error_records,
         "counts": dict(counts),
@@ -121,12 +123,31 @@ def _render_examples(examples: list[dict[str, str]]) -> list[str]:
     return lines
 
 
+def _read_coverage_gap_review(path: Path | None) -> dict[str, Any] | None:
+    if path is None or not path.exists():
+        return None
+    with path.open(encoding="utf-8", newline="") as handle:
+        rows = list(csv.DictReader(handle))
+    gaps = [row for row in rows if not str(row.get("gold_concept_uri") or "").strip()]
+    role_counts = Counter(str(row.get("role_type") or "unknown") for row in gaps)
+    return {
+        "path": str(path),
+        "total_rows": len(rows),
+        "gap_count": len(gaps),
+        "role_counts": dict(sorted(role_counts.items())),
+    }
+
+
 def render_markdown(analysis: dict[str, Any]) -> str:
     error_records = int(analysis["error_records"])
+    source_dir = str(analysis.get("audit_dir") or DEFAULT_AUDIT_DIR)
+    posting_count = int(analysis.get("posting_count") or 0)
+    soft_skill_records = int(analysis.get("gold_labels", {}).get("SKILL_TRANS", 0))
+    coverage_review = analysis.get("coverage_gap_review") or {}
     lines = [
         "# Error Taxonomy",
         "",
-        "This taxonomy was generated from `results/audit_traces/` after the corrected MPNet evaluation.",
+        f"This taxonomy was generated from `{source_dir}/` after the corrected MPNet evaluation.",
         "",
         f"- Total trace records: **{analysis['total_records']}**",
         f"- Correct records: **{analysis['correct_records']}**",
@@ -162,6 +183,24 @@ def render_markdown(analysis: dict[str, Any]) -> str:
             lines.extend(_render_examples(analysis["examples"][code]))
             lines.append("")
 
+    if coverage_review:
+        lines.extend(
+            [
+                "## Separate ESCO Coverage Review",
+                "",
+                "These rows are documented taxonomy gaps from the manual ESCO review. They are reported separately and are not added to the audit-error denominator above.",
+                "",
+                f"- Review file: `{coverage_review['path']}`",
+                f"- Reviewed rows: **{coverage_review['total_rows']}**",
+                f"- Rows without a suitable ESCO URI: **{coverage_review['gap_count']}**",
+                "- Role-type counts: "
+                + ", ".join(
+                    f"{role}={count}" for role, count in coverage_review["role_counts"].items()
+                ),
+                "",
+            ]
+        )
+
     lines.extend(["## Role-Type Breakdown", "", "| Role type | " + " | ".join(CATEGORY_SPECS) + " |", "|---|" + "---:|" * len(CATEGORY_SPECS)])
     for role, role_counts in analysis["role_counts"].items():
         values = " | ".join(str(role_counts.get(code, 0)) for code in CATEGORY_SPECS)
@@ -172,15 +211,40 @@ def render_markdown(analysis: dict[str, Any]) -> str:
             "",
             "## Limitations",
             "",
-            "The taxonomy is based on the 125-posting gold corpus and its reviewed ESCO links. E3 is included as a required category, but its frequency is zero because the reviewed corpus contains no `SKILL_TRANS` gold spans. The results therefore support conclusions about boundary, extraction, and technical ESCO-linking errors more strongly than conclusions about soft-skill ambiguity.",
+            (
+                f"The taxonomy is based on the {posting_count}-posting annotated corpus and its reviewed ESCO links. "
+                f"The audit contains {soft_skill_records} URI-linked `SKILL_TRANS` records, so soft-skill ambiguity "
+                "is interpreted from the observed cases. Results remain conditional on this corpus and should not "
+                + (
+                    f"be generalised to all Irish technology job postings. The separate ESCO review identified "
+                    f"{coverage_review['gap_count']} rows without a suitable URI; these are documented separately "
+                    "and excluded from URI-linked metrics."
+                    if coverage_review
+                    else "be generalised to all Irish technology job postings."
+                )
+                if soft_skill_records
+                else (
+                    f"The taxonomy is based on the {posting_count}-posting annotated corpus and its reviewed ESCO links. "
+                    "E3 is included as a required category, but its frequency is zero because the reviewed corpus "
+                    "contains no URI-linked `SKILL_TRANS` records. The results therefore support conclusions about "
+                    "boundary, extraction, and technical ESCO-linking errors more strongly than conclusions about "
+                    "soft-skill ambiguity."
+                )
+            ),
             "",
         ]
     )
     return "\n".join(lines)
 
 
-def build_error_taxonomy(audit_dir: Path = DEFAULT_AUDIT_DIR, output_path: Path = DEFAULT_OUTPUT) -> dict[str, Any]:
+def build_error_taxonomy(
+    audit_dir: Path = DEFAULT_AUDIT_DIR,
+    output_path: Path = DEFAULT_OUTPUT,
+    review_csv: Path | None = None,
+) -> dict[str, Any]:
     analysis = analyse_traces(list(iter_trace_records(audit_dir)))
+    analysis["audit_dir"] = str(audit_dir)
+    analysis["coverage_gap_review"] = _read_coverage_gap_review(review_csv)
     output_path.parent.mkdir(parents=True, exist_ok=True)
     output_path.write_text(render_markdown(analysis), encoding="utf-8")
     return analysis
@@ -189,9 +253,10 @@ def build_error_taxonomy(audit_dir: Path = DEFAULT_AUDIT_DIR, output_path: Path 
 def main() -> None:
     parser = argparse.ArgumentParser(description="Build the Phase 5.7 error taxonomy.")
     parser.add_argument("--audit-dir", type=Path, default=DEFAULT_AUDIT_DIR)
+    parser.add_argument("--review-csv", type=Path)
     parser.add_argument("--output", type=Path, default=DEFAULT_OUTPUT)
     args = parser.parse_args()
-    analysis = build_error_taxonomy(args.audit_dir, args.output)
+    analysis = build_error_taxonomy(args.audit_dir, args.output, args.review_csv)
     print(json.dumps({"output": str(args.output), "error_records": analysis["error_records"], "counts": analysis["counts"]}, indent=2, sort_keys=True))
 
 

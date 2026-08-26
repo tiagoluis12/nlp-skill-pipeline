@@ -1,0 +1,100 @@
+{
+  "ablation": "A3",
+  "description": "Domain transfer of the SKILLSPAN-trained NER model",
+  "domain_transfer_gap": {
+    "per_class": {
+      "SKILL_TECH": {
+        "f1": 0.44250472454787176,
+        "precision": 0.411082306335584,
+        "recall": 0.47869330889092576
+      },
+      "SKILL_TRANS": {
+        "f1": 0.6108228270646154,
+        "precision": 0.5569187832039513,
+        "recall": 0.6604105802267191
+      }
+    },
+    "span_exact": {
+      "f1": 0.5746706765619803,
+      "precision": 0.667724558000375,
+      "recall": 0.23217328278746074
+    },
+    "span_relaxed": {
+      "f1": 0.5620735027946481,
+      "precision": 0.6233830924717282,
+      "recall": 0.025718422333107505
+    },
+    "token_metrics": {
+      "f1": 0.5303680259993324,
+      "precision": 0.4878086008955695,
+      "recall": 0.5789382042303913
+    }
+  },
+  "gap_definition": "in_distribution minus out_of_distribution; positive values indicate performance loss after domain transfer",
+  "in_distribution": {
+    "documents": 3569,
+    "per_class": {
+      "SKILL_TECH": {
+        "f1": 0.4433164128595601,
+        "precision": 0.41162608012568735,
+        "recall": 0.48029330889092575
+      },
+      "SKILL_TRANS": {
+        "f1": 0.6137071651090342,
+        "precision": 0.5584691708008505,
+        "recall": 0.6810717372515125
+      }
+    },
+    "source": "skillspan",
+    "span_exact": {
+      "f1": 0.7886710239651417,
+      "precision": 0.8008849557522124,
+      "recall": 0.776824034334764
+    },
+    "span_relaxed": {
+      "f1": 0.9063260340632604,
+      "precision": 0.8327123695976155,
+      "recall": 0.9942170818505338
+    },
+    "split": "test",
+    "token_metrics": {
+      "f1": 0.5320356853203568,
+      "precision": 0.488822652757079,
+      "recall": 0.5836298932384342
+    }
+  },
+  "interpretation": "The gold-standard corpus is out-of-distribution relative to SKILLSPAN. A positive gap indicates degradation on the collected job-posting corpus; a zero gap indicates no change.",
+  "model": "models/ner/best_checkpoint",
+  "out_of_distribution": {
+    "documents": 85,
+    "per_class": {
+      "SKILL_TECH": {
+        "f1": 0.0008116883116883117,
+        "precision": 0.000543773790103317,
+        "recall": 0.0016
+      },
+      "SKILL_TRANS": {
+        "f1": 0.002884338044418806,
+        "precision": 0.0015503875968992248,
+        "recall": 0.02066115702479339
+      }
+    },
+    "source": "gold",
+    "span_exact": {
+      "f1": 0.21400034740316135,
+      "precision": 0.13316039775183744,
+      "recall": 0.5446507515473032
+    },
+    "span_relaxed": {
+      "f1": 0.3442525312686123,
+      "precision": 0.2093292771258873,
+      "recall": 0.9684986595174263
+    },
+    "split": null,
+    "token_metrics": {
+      "f1": 0.0016676593210244192,
+      "precision": 0.0010140518615094887,
+      "recall": 0.004691689008042895
+    }
+  }
+}

@@ -1,0 +1,68 @@
+{
+  "ablation": "A2",
+  "dataset": "gold",
+  "delta_vs_full_pipeline": {
+    "end_to_end_coverage": 0.8823529411764706,
+    "esco_acc_at_1": 0.0,
+    "esco_acc_at_3": 0.0,
+    "mrr": 0.0,
+    "span_exact_f1": 0.16314473840027086,
+    "span_relaxed_f1": -0.17488029832503188
+  },
+  "description": "Baseline 2 noun-phrase spans + full exact/fuzzy and embedding ESCO ranker; NER removed",
+  "end_to_end": {
+    "correct_links_on_exact_spans": 283,
+    "correct_postings": 80,
+    "coverage": 0.9411764705882353,
+    "exact_gold_spans": 437,
+    "exact_span_link_accuracy": 0.6475972540045767,
+    "postings": 85,
+    "predicted_spans": 16126
+  },
+  "esco_linking_on_reviewed_gold_spans": {
+    "acc_at_1": 0.7849002849002849,
+    "acc_at_3": 0.98005698005698,
+    "documents": 1404,
+    "macro_f1": 0.8158928744930831,
+    "mrr": 0.8838319088319094
+  },
+  "extraction": {
+    "documents": 85,
+    "per_class": {},
+    "span_exact": {
+      "f1": 0.3771450858034322,
+      "fn": 52,
+      "fp": 3142,
+      "precision": 0.2353370649793137,
+      "recall": 0.9489695780176644,
+      "tp": 967
+    },
+    "span_relaxed": {
+      "f1": 0.16937223294358045,
+      "fn": 0,
+      "fp": 14634,
+      "precision": 0.09252139402207615,
+      "recall": 1.0,
+      "tp": 1492
+    },
+    "token": {
+      "f1": 0.037007605857645585,
+      "precision": 0.020215800570507255,
+      "recall": 0.21849865951742628
+    }
+  },
+  "full_pipeline_reference": {
+    "dataset": "gold",
+    "end_to_end_coverage": 0.058823529411764705,
+    "esco_acc_at_1": 0.7849002849002849,
+    "esco_acc_at_3": 0.98005698005698,
+    "mrr": 0.8838319088319094,
+    "span_exact_f1": 0.21400034740316135,
+    "span_relaxed_f1": 0.3442525312686123,
+    "system": "Proposed_NER_Ranking"
+  },
+  "interpretation": "The reviewed-gold linking scores are expected to equal the full pipeline because both use the same ranker on the same reviewed spans. The end-to-end coverage isolates the effect of replacing NER with Baseline 2 noun-phrase spans.",
+  "review_csv": "results/irish_gold_esco_review_priority.csv",
+  "threshold": 0.6,
+  "threshold_source": "results/b2_threshold_search_irish.json"
+}

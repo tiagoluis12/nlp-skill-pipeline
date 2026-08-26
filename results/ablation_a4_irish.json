@@ -1,0 +1,43 @@
+{
+  "ablation": "A4",
+  "comparison_note": "This is a controlled MPNet versus MiniLM comparison: both models use local SentenceTransformer snapshots, the same ESCO labels, the same reviewed spans, and the same lexicon-first ranking procedure.",
+  "dataset": "gold",
+  "delta_minilm_minus_mpnet": {
+    "acc_at_1": -0.4123931623931623,
+    "acc_at_3": -0.35185185185185186,
+    "macro_f1": -0.5121303291868358,
+    "mrr": -0.3745489078822425
+  },
+  "description": "Replace all-mpnet-base-v2 with all-MiniLM-L6-v2 in the ESCO ranker",
+  "interpretation": "Positive deltas indicate that MiniLM outperformed MPNet; negative deltas indicate a decrease. Both models were loaded from local SentenceTransformer snapshots and evaluated on the same 1404 URI-mapped spans with the same lexicon-first ranking procedure. FAISS was unavailable on this macOS host, so both models use the mathematically equivalent NumPy exact inner-product index.",
+  "minilm": {
+    "dimension": 384,
+    "index_dir": "models/a4_minilm_irish",
+    "metrics": {
+      "acc_at_1": 0.37250712250712253,
+      "acc_at_3": 0.6282051282051282,
+      "documents": 1404,
+      "macro_f1": 0.30376254530624736,
+      "mrr": 0.5092830009496669
+    },
+    "model_id": "all-MiniLM-L6-v2",
+    "model_path": "/Users/tiagoluis/.cache/huggingface/hub/models--sentence-transformers--all-MiniLM-L6-v2/snapshots/1110a243fdf4706b3f48f1d95db1a4f5529b4d41",
+    "runtime_index": "numpy_exact_inner_product"
+  },
+  "reference_mpnet": {
+    "embeddings": "models/esco_embeddings.npy",
+    "metrics": {
+      "acc_at_1": 0.7849002849002849,
+      "acc_at_3": 0.98005698005698,
+      "documents": 1404,
+      "macro_f1": 0.8158928744930831,
+      "mrr": 0.8838319088319094
+    },
+    "model_id": "all-mpnet-base-v2",
+    "model_path": ".cache/huggingface/hub/models--sentence-transformers--all-mpnet-base-v2/snapshots/e8c3b32edf5434bc2275fc9bab85f82640a19130",
+    "runtime_index": "numpy_exact_inner_product",
+    "source_index_artifact": "models/esco_faiss.index"
+  },
+  "review_csv": "results/irish_gold_esco_review_priority.csv",
+  "reviewed_rows": 1492
+}

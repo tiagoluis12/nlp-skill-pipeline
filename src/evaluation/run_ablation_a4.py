@@ -289,15 +289,16 @@ def run_ablation_a4(
             "metrics": minilm_metrics,
         },
         "delta_minilm_minus_mpnet": _deltas(minilm_metrics, mpnet_metrics),
-        "phase5_comparability_note": (
-            "Phase 5.1 used the ranker's fallback path because its default cache discovery did not locate "
-            "the project-local MPNet snapshot. A4 is a controlled true-MPNet versus true-MiniLM comparison; "
-            "rerun the Phase 5.1 embedding-based metrics with the explicit MPNet snapshot before final reporting."
+        "comparison_note": (
+            "This is a controlled MPNet versus MiniLM comparison: both models use local "
+            "SentenceTransformer snapshots, the same ESCO labels, the same reviewed spans, and the "
+            "same lexicon-first ranking procedure."
         ),
         "interpretation": (
             "Positive deltas indicate that MiniLM outperformed MPNet; negative deltas indicate a decrease. "
             "Both models were loaded from local SentenceTransformer snapshots and evaluated on the same "
-            "601 reviewed spans with the same lexicon-first ranking procedure. FAISS was unavailable on "
+            f"{int(mpnet_metrics['documents'])} URI-mapped spans with the same lexicon-first ranking procedure. "
+            "FAISS was unavailable on "
             "this macOS host, so both models use the mathematically equivalent NumPy exact inner-product index."
         ),
     }
