@@ -409,59 +409,64 @@ def predict_token_sequences(
     batch_size: int = 16,
     max_length: int = DEFAULT_MAX_LENGTH,
 ) -> list[dict[str, object]]:
+    """Predict complete sequences with overlapping windows.
+
+    JobBERT is limited to a short maximum sequence length. Overflow windows
+    prevent long job postings from being silently padded with ``O`` labels.
+    """
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     bundle.model.to(device)
     bundle.model.eval()
 
     outputs: list[dict[str, object]] = []
-    for batch_start in range(0, len(token_sequences), batch_size):
-        batch_tokens = list(token_sequences[batch_start : batch_start + batch_size])
+    stride = min(32, max(1, max_length // 4))
+    for tokens in token_sequences:
+        tokens = list(tokens)
+        if not tokens:
+            outputs.append({"tokens": [], "labels": [], "confidences": []})
+            continue
+
         encoding = bundle.tokenizer(
-            batch_tokens,
+            [tokens],
             is_split_into_words=True,
             truncation=True,
             max_length=max_length,
+            stride=stride,
+            return_overflowing_tokens=True,
             padding=True,
             return_tensors="pt",
         )
-        inputs = {key: value.to(device) for key, value in encoding.items()}
+        # Overflow metadata identifies the source sequence but is not a model input.
+        inputs = {
+            key: value.to(device)
+            for key, value in encoding.items()
+            if key in {"input_ids", "attention_mask", "token_type_ids"}
+        }
         with torch.no_grad():
             logits = bundle.model(**inputs).logits
         probs = _softmax(logits)
         predictions = torch.argmax(logits, dim=-1)
 
-        for batch_index, tokens in enumerate(batch_tokens):
-            word_labels: list[str] = []
-            word_scores: list[float] = []
-            word_ids = encoding.word_ids(batch_index=batch_index)
+        best_predictions: dict[int, tuple[float, str]] = {}
+        for window_index in range(logits.shape[0]):
             previous_word_id = None
+            word_ids = encoding.word_ids(batch_index=window_index)
             for token_index, word_id in enumerate(word_ids):
                 if word_id is None:
                     continue
                 if word_id == previous_word_id:
                     continue
-                predicted_id = int(predictions[batch_index, token_index].item())
+                predicted_id = int(predictions[window_index, token_index].item())
                 label = ID_TO_LABEL[predicted_id]
-                score = float(probs[batch_index, token_index, predicted_id].item())
-                word_labels.append(label)
-                word_scores.append(score)
+                score = float(probs[window_index, token_index, predicted_id].item())
+                current = best_predictions.get(word_id)
+                if current is None or score > current[0]:
+                    best_predictions[word_id] = (score, label)
                 previous_word_id = word_id
 
-            if len(word_labels) < len(tokens):
-                gap = len(tokens) - len(word_labels)
-                word_labels.extend(["O"] * gap)
-                word_scores.extend([0.0] * gap)
-            elif len(word_labels) > len(tokens):
-                word_labels = word_labels[: len(tokens)]
-                word_scores = word_scores[: len(tokens)]
-
-            outputs.append(
-                {
-                    "tokens": list(tokens),
-                    "labels": word_labels,
-                    "confidences": word_scores,
-                }
-            )
+        word_labels = [best_predictions.get(index, (0.0, "O"))[1] for index in range(len(tokens))]
+        word_scores = [best_predictions.get(index, (0.0, "O"))[0] for index in range(len(tokens))]
+        outputs.append({"tokens": tokens, "labels": word_labels, "confidences": word_scores})
 
     return outputs
 
