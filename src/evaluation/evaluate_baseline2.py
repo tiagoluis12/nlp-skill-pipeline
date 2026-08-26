@@ -162,23 +162,61 @@ def run_threshold_search(
     return payload
 
 
-def run_gold_evaluation(gold_jsonl: Path, ranker, threshold: float) -> dict[str, object]:
-    records = [{"id": row["id"], "tokens": row["tokens"], "labels": row["labels"]} for row in _load_jsonl(gold_jsonl)]
+def run_gold_evaluation(
+    gold_jsonl: Path,
+    ranker,
+    threshold: float,
+    predictions_output: Path | None = None,
+) -> dict[str, object]:
+    records = [
+        {
+            "id": row["id"],
+            "source_id": row.get("source_id"),
+            "role_type": row.get("role_type"),
+            "tokens": row["tokens"],
+            "labels": row["labels"],
+        }
+        for row in _load_jsonl(gold_jsonl)
+    ]
 
     prepared_records = []
+    prediction_records = []
     for row in records:
+        candidates = rank_document_candidates(row["tokens"], ranker)
+        selected = select_predictions(candidates, threshold)
         prepared_records.append(
             {
                 "id": row["id"],
                 "tokens": row["tokens"],
                 "gold_spans": _row_to_gold_spans(row),
                 "gold_labels": row["labels"],
-                "candidates": rank_document_candidates(row["tokens"], ranker),
+                "candidates": candidates,
+            }
+        )
+        prediction_records.append(
+            {
+                "id": row["id"],
+                "source_id": row.get("source_id"),
+                "role_type": row.get("role_type"),
+                "predicted_spans": [
+                    {
+                        "start": candidate.start,
+                        "end": candidate.end,
+                        "label": "SKILL_TECH",
+                        "concept_uri": candidate.predicted_uri,
+                    }
+                    for candidate in selected
+                ],
             }
         )
 
     result = _evaluate_threshold(prepared_records, ranker, threshold, token_pred_label="SKILL_TECH")
     result["source"] = "gold"
+    if predictions_output is not None:
+        predictions_output.parent.mkdir(parents=True, exist_ok=True)
+        with predictions_output.open("w", encoding="utf-8") as handle:
+            for record in prediction_records:
+                handle.write(json.dumps(record, ensure_ascii=False) + "\n")
     return result
 
 
@@ -189,22 +227,34 @@ def main() -> None:
     parser.add_argument("--output", type=Path, default=Path("results/b2_threshold_search.json"))
     parser.add_argument("--gold-jsonl", type=Path, default=None)
     parser.add_argument("--gold-output", type=Path, default=Path("results/baseline2_gold.json"))
+    parser.add_argument("--gold-predictions-output", type=Path, default=None)
     parser.add_argument("--embeddings", type=Path, default=Path("models/esco_embeddings.npy"))
     parser.add_argument("--index", type=Path, default=Path("models/esco_faiss.index"))
     parser.add_argument("--labels", type=Path, default=Path("models/esco_embedding_labels.json"))
     parser.add_argument("--model-name", default="all-mpnet-base-v2")
     parser.add_argument("--threshold", type=float, action="append", default=None)
+    parser.add_argument("--skip-threshold-search", action="store_true")
     args = parser.parse_args()
 
     ranker = load_span_ranker(args.embeddings, args.index, args.labels, model_name=args.model_name)
-    thresholds = args.threshold if args.threshold is not None else [0.60, 0.65, 0.70, 0.75]
-    payload = run_threshold_search(args.skillspan_disk, args.split, ranker, thresholds)
-    args.output.parent.mkdir(parents=True, exist_ok=True)
-    args.output.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
-    print(json.dumps(payload, indent=2, sort_keys=True))
+    if args.skip_threshold_search:
+        if args.threshold is None or len(args.threshold) != 1:
+            raise ValueError("--skip-threshold-search requires exactly one --threshold value")
+        payload = {"best_threshold": args.threshold[0], "split": args.split}
+    else:
+        thresholds = args.threshold if args.threshold is not None else [0.60, 0.65, 0.70, 0.75]
+        payload = run_threshold_search(args.skillspan_disk, args.split, ranker, thresholds)
+        args.output.parent.mkdir(parents=True, exist_ok=True)
+        args.output.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+        print(json.dumps(payload, indent=2, sort_keys=True))
 
     if args.gold_jsonl is not None:
-        gold_payload = run_gold_evaluation(args.gold_jsonl, ranker, float(payload["best_threshold"]))
+        gold_payload = run_gold_evaluation(
+            args.gold_jsonl,
+            ranker,
+            float(payload["best_threshold"]),
+            predictions_output=args.gold_predictions_output,
+        )
         args.gold_output.parent.mkdir(parents=True, exist_ok=True)
         args.gold_output.write_text(json.dumps(gold_payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
 
