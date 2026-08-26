@@ -40,6 +40,33 @@ def test_select_unseen_postings_excludes_gold_ids(tmp_path: Path) -> None:
     assert [row["id"] for row in selected] == ["c1", "c2", "c3", "b1", "a2"]
 
 
+def test_select_unseen_postings_from_consolidated_corpus(tmp_path: Path) -> None:
+    corpus_path = tmp_path / "irish.jsonl"
+    roles = list(gate.ROLE_ORDER)
+    rows = [
+        {"id": f"{role}-{index}", "role_type": role, "sentences": ["Job."], "raw_text": "Job."}
+        for role in roles
+        for index in range(1, 3 if role == "cloud_support" else 2)
+    ]
+    _write_jsonl(corpus_path, rows)
+    gold_path = tmp_path / "gold.jsonl"
+    _write_jsonl(gold_path, [{"id": "cloud_support-1"}])
+
+    selected = gate.select_unseen_postings(
+        gold_jsonl=gold_path,
+        per_role=1,
+        input_jsonl=corpus_path,
+    )
+
+    assert [row["id"] for row in selected] == [
+        "cloud_support-2",
+        "cybersecurity-1",
+        "data_analyst-1",
+        "qa_engineer-1",
+        "software_dev-1",
+    ]
+
+
 def test_run_integration_record_populates_uris(monkeypatch) -> None:
     record = {
         "id": "x1",
@@ -57,10 +84,12 @@ def test_run_integration_record_populates_uris(monkeypatch) -> None:
     )
     monkeypatch.setattr(
         gate,
-        "rank_span_candidates",
-        lambda span_text, ranker, lexicon_index=None, top_k=5: [
-            {"label": "Python testing", "concept_uri": "uri-1", "score": 1.0, "method": "exact"}
-        ],
+        "rank_span_candidates_batch",
+        lambda span_texts, ranker, lexicon_index=None, top_k=5: {
+            "Python testing": [
+                {"label": "Python testing", "concept_uri": "uri-1", "score": 1.0, "method": "exact"}
+            ]
+        },
     )
 
     report = gate.run_integration_record(record, bundle=object(), ranker=object(), lexicon_index={})

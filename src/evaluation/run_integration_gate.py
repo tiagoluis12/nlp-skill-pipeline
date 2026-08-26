@@ -12,7 +12,7 @@ os.environ.setdefault("TOKENIZERS_PARALLELISM", "false")
 os.environ.setdefault("OMP_NUM_THREADS", "1")
 os.environ.setdefault("MKL_NUM_THREADS", "1")
 
-from src.esco.ranker import load_lexicon_index, load_span_ranker, rank_span_candidates
+from src.esco.ranker import load_lexicon_index, load_span_ranker, rank_span_candidates_batch
 from src.extraction.ner_model import load_checkpoint_bundle, predict_text_spans
 
 
@@ -46,13 +46,19 @@ def select_unseen_postings(
     clean_dir: Path = DEFAULT_CLEAN_DIR,
     gold_jsonl: Path = DEFAULT_GOLD_JSONL,
     per_role: int = DEFAULT_PER_ROLE,
+    input_jsonl: Path | None = None,
 ) -> list[dict[str, object]]:
     gold_ids = load_gold_ids(gold_jsonl)
     selected: list[dict[str, object]] = []
+    consolidated_records = _load_jsonl(input_jsonl) if input_jsonl is not None else None
 
     for role_type in ROLE_ORDER:
-        path = clean_dir / f"{role_type}.jsonl"
-        records = [row for row in _load_jsonl(path) if str(row.get("id")) not in gold_ids]
+        if consolidated_records is None:
+            path = clean_dir / f"{role_type}.jsonl"
+            source_records = _load_jsonl(path)
+        else:
+            source_records = [row for row in consolidated_records if row.get("role_type") == role_type]
+        records = [row for row in source_records if str(row.get("id")) not in gold_ids]
         records.sort(key=lambda row: str(row.get("id")))
         if len(records) < per_role:
             raise ValueError(f"Not enough unseen records for {role_type}: need {per_role}, found {len(records)}")
@@ -92,11 +98,17 @@ def run_integration_record(
     raw_text = str(record.get("raw_text") or "")
     sentences = [str(sentence) for sentence in record.get("sentences") or []]
     spans = predict_text_spans(bundle, raw_text)
+    ranked_candidates = rank_span_candidates_batch(
+        [span.text for span in spans],
+        ranker,
+        lexicon_index=lexicon_index,
+        top_k=top_k,
+    )
 
     trace_spans: list[dict[str, object]] = []
     uri_populated = 0
     for span in spans:
-        candidates = rank_span_candidates(span.text, ranker, lexicon_index=lexicon_index, top_k=top_k)
+        candidates = ranked_candidates.get(span.text, [])
         predicted_uri = candidates[0]["concept_uri"] if candidates else None
         if predicted_uri:
             uri_populated += 1
@@ -193,6 +205,7 @@ def run_integration_gate(
     report_output: Path = DEFAULT_REPORT,
     per_role: int = DEFAULT_PER_ROLE,
     top_k: int = 5,
+    input_jsonl: Path | None = None,
 ) -> dict[str, object]:
     bundle = load_checkpoint_bundle()
     ranker = load_span_ranker(
@@ -204,7 +217,12 @@ def run_integration_gate(
     )
     lexicon_index = load_lexicon_index(esco_csv)
 
-    records = select_unseen_postings(clean_dir=clean_dir, gold_jsonl=gold_jsonl, per_role=per_role)
+    records = select_unseen_postings(
+        clean_dir=clean_dir,
+        gold_jsonl=gold_jsonl,
+        per_role=per_role,
+        input_jsonl=input_jsonl,
+    )
     manifest = write_integration_outputs(records, bundle, ranker, lexicon_index, output_dir=output_dir, top_k=top_k)
     manifest["selected_roles"] = list(ROLE_ORDER)
     manifest["per_role"] = per_role
@@ -225,6 +243,7 @@ def main() -> None:
     parser.add_argument("--report-output", type=Path, default=DEFAULT_REPORT)
     parser.add_argument("--per-role", type=int, default=DEFAULT_PER_ROLE)
     parser.add_argument("--top-k", type=int, default=5)
+    parser.add_argument("--input-jsonl", type=Path, default=None, help="Consolidated corpus to use instead of role-separated files.")
     args = parser.parse_args()
 
     manifest = run_integration_gate(
@@ -238,6 +257,7 @@ def main() -> None:
         report_output=args.report_output,
         per_role=args.per_role,
         top_k=args.top_k,
+        input_jsonl=args.input_jsonl,
     )
     print(json.dumps(manifest, indent=2, sort_keys=True))
 
