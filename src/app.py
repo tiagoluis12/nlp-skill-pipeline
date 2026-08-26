@@ -1,11 +1,18 @@
 from __future__ import annotations
 
 import json
+import sys
 from pathlib import Path
 from typing import Sequence
 
 import pandas as pd
 import streamlit as st
+
+# Streamlit executes this file with `src/` as the import root. Add the project
+# root so the app uses the same package imports as the test and CLI entry points.
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
+if str(PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(PROJECT_ROOT))
 
 from src.esco.ranker import load_lexicon_index, load_span_ranker, rank_span_candidates
 from src.extraction.ner_model import (
@@ -15,10 +22,10 @@ from src.extraction.ner_model import (
 )
 
 
-ESCO_CSV = Path("data/benchmarks/esco/skills_en.csv")
-ESCO_EMBEDDINGS = Path("models/esco_embeddings.npy")
-ESCO_INDEX = Path("models/esco_faiss.index")
-ESCO_LABELS = Path("models/esco_embedding_labels.json")
+ESCO_CSV = PROJECT_ROOT / "data/benchmarks/esco/skills_en.csv"
+ESCO_EMBEDDINGS = PROJECT_ROOT / "models/esco_embeddings.npy"
+ESCO_INDEX = PROJECT_ROOT / "models/esco_faiss.index"
+ESCO_LABELS = PROJECT_ROOT / "models/esco_embedding_labels.json"
 
 
 def _candidate_summary(candidates: Sequence[dict[str, object]]) -> str:
