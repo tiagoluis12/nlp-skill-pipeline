@@ -61,15 +61,17 @@ cd "$(git rev-parse --show-toplevel)"
 
 Command-line scripts show their options with `--help`.
 
-### Preprocess an authorized JSONL input
+### Preprocess the included example
 
-Replace the example input path below with the path to a real JSONL file you are authorized to use.
+The repository includes one clearly synthetic record so this command works immediately after cloning:
 
 ```bash
 python -m src.preprocess.clean \
-  --input /path/to/authorized_posts.jsonl \
+  --input examples/synthetic_job_posts.jsonl \
   --output /tmp/clean_posts.jsonl
 ```
+
+For your own data, replace the input path with an authorized JSONL file. Each line must be a JSON object with a `raw_text` field; `id` and `role_type` are optional. The Irish job-posting corpus is not included in this repository.
 
 The Adzuna collector is optional and requires API credentials. Use it only in accordance with the API terms and applicable permissions:
 
