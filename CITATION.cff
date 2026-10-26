@@ -1,0 +1,21 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as follows."
+title: "NLP Skill Pipeline"
+version: "1.0.0"
+authors:
+  - family-names: Luis
+    given-names: Tiago
+    affiliation: Atlantic Technological University
+license: MIT
+repository-code: "https://github.com/tiagoluis12/nlp-skill-pipeline"
+abstract: >-
+  A research prototype for extracting skill mentions from job advertisements
+  and linking them to concepts in the ESCO classification. The project
+  compares lexicon matching, embedding retrieval, and supervised named-entity
+  recognition with separate extraction, linking, and end-to-end evaluations.
+keywords:
+  - natural language processing
+  - skill extraction
+  - job advertisements
+  - ESCO
+  - information extraction

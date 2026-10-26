@@ -90,7 +90,9 @@ Training uses the local SkillSpan data and downloads the configured pretrained t
 python -m src.extraction.ner_model train \
   --dataset-dir data/benchmarks/skillspan \
   --output-dir models/ner \
-  --search-output results/ner_hp_search.csv
+  --search-output results/ner_hp_search.csv \
+  --seed 42 \
+  --no-offline-fallback
 ```
 
 The trained NER checkpoint is excluded from Git because it is large. A fresh clone needs that checkpoint to run NER inference or the demo; see [models/ner/README.md](models/ner/README.md) for its expected location and regeneration notes.
@@ -129,6 +131,17 @@ The included `IEEEtran.cls` supplies the IEEE conference document class. The Str
 ## Data privacy
 
 Review job-posting data, annotation exports, and repository history before public distribution. The JSONL scrubber targets email addresses and phone numbers; it does not guarantee removal of every personal identifier and does not rewrite Git history.
+
+## Release preparation
+
+The software citation metadata is in [CITATION.cff](CITATION.cff). A gold-standard ZIP candidate can be regenerated with:
+
+```bash
+python scripts/prepare_gold_standard_release.py
+shasum -a 256 -c release/irish_gold_standard_pii_review_candidate.zip.sha256
+```
+
+The candidate omits source IDs, reindexes records, and replaces URLs and detected contact patterns. Automated checks found no email or phone patterns. The archive is still marked for manual review because automated checks cannot reliably identify every personal name or confirm redistribution rights. Review it before attaching it to a public release.
 
 ## License
 
