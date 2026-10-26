@@ -1,28 +1,30 @@
 # NLP Skill Pipeline
 
-A research prototype for extracting skill mentions from job advertisements and linking them to concepts in the European Skills, Competences, Qualifications and Occupations (ESCO) classification. The project compares transparent lexicon matching, embedding-based retrieval, and supervised named-entity recognition (NER) followed by ESCO ranking.
-
-The evaluation uses the SkillSpan benchmark and an availability-constrained Irish technology-posting sample. It reports extraction, taxonomy-linking, and end-to-end results separately so that a strong ranker is not mistaken for a strong complete pipeline.
+A research prototype for extracting skill mentions from job advertisements and linking them to concepts in the European Skills, Competences, Qualifications and Occupations (ESCO) classification. The project compares lexicon matching, embedding-based retrieval, and named-entity recognition (NER) followed by ESCO ranking. The conference paper and its LaTeX source are in [`paper/conference/`](paper/conference/).
 
 ## Features
 
-- Clean and sentence-segment job-posting JSONL, with basic email and phone redaction.
-- Extract skill spans using lexicon matching or a trained NER model.
-- Rank candidate ESCO concepts and return their labels and URIs.
-- Evaluate exact and relaxed span metrics, ESCO ranking metrics, ablations, and audit traces.
-- Inspect NER and ESCO predictions in a Streamlit interface.
-- Rebuild the final Irish results table from the checked-in evaluation artifacts.
+- Clean and sentence-segment JSONL supplied by the user.
+- Extract skill spans with a lexicon baseline or a trained NER model.
+- Rank skill phrases against ESCO concepts.
+- Evaluate span extraction, ESCO linking, ablations, and aggregate end-to-end results.
+- Inspect local predictions in a Streamlit interface.
+- Rebuild the checked-in aggregate Irish results table from frozen metric reports.
 
-## System requirements
+## Data and licensing
+
+The Irish job-advertisement corpus, annotations, per-posting predictions, review queues, and audit traces are not distributed in this repository. Written permission to redistribute the source postings has not been established. The paper reports aggregate results for the study sample; this repository does not contain the underlying Irish records needed to rerun those experiments. Use only data that you are authorized to collect and process.
+
+The separate SkillSpan benchmark is included under CC BY 4.0. See [`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md) for attribution and the license link. ESCO files are included for taxonomy lookup; see the same notice for their source and attribution. Third-party dataset terms apply independently of this repository's software license.
+
+## Requirements and installation
 
 - Python 3.11
 - Git and pip
-- Internet access for model downloads, benchmark downloads, or Adzuna collection
-- CPU is sufficient for the table-reproduction command. NER training and transformer inference can require substantial memory and time.
+- Internet access when downloading model dependencies
+- CPU is sufficient to rebuild the aggregate results table. Model training and transformer inference may require substantial memory and time.
 
-## Install
-
-Run these commands from the repository root:
+From the repository root:
 
 ```bash
 python3.11 -m venv .venv
@@ -31,41 +33,42 @@ python -m pip install --upgrade pip
 pip install -r requirements.txt
 ```
 
-The main evaluation-table command uses checked-in reports and traces. It does not train or run the models. Collection from Adzuna is optional and requires `ADZUNA_APP_ID` and `ADZUNA_APP_KEY`; copy `.env.example` to `.env` and add credentials before using the collector.
+## Rebuild the main results table
 
-## Reproduce the main results table
-
-From the repository root, run:
+Run:
 
 ```bash
 python -m src.evaluation.build_irish_final_results
 ```
 
-This writes `results/final_results_table_irish.csv` using the frozen metric reports, reviewed ESCO mappings, and audit traces in `results/`. It rebuilds the reported table; it does not retrain models or regenerate predictions.
+This rebuilds `results/final_results_table_irish.csv` from the checked-in aggregate extraction reports, ESCO linking metrics, and frozen posting-level coverage counts. It does not train models or regenerate predictions, and the source Irish postings and record-level outputs are not included.
+
+The conference paper's aggregate tables and figures are in `results/` and `paper/conference/`. To rebuild the paper PDF, install a LaTeX distribution with `latexmk`, then run:
+
+```bash
+cd paper/conference
+latexmk -pdf nlp_skill_pipeline_conference_paper_.tex
+```
 
 ## Run the project
 
-Run the examples from the repository root. Command-line scripts that accept options show them with `--help`.
+Run commands from the repository root. Command-line scripts show their options with `--help`.
 
-### Preprocess job postings
-
-Clean and sentence-segment a JSONL input, writing the output outside the repository:
+### Preprocess an authorized JSONL input
 
 ```bash
 python -m src.preprocess.clean \
-  --input data/raw/cloud_support.jsonl \
-  --output /tmp/cloud_support_clean.jsonl
+  --input /path/to/authorized_posts.jsonl \
+  --output /tmp/clean_posts.jsonl
 ```
 
-The Adzuna collector requires credentials. See its available filters before collecting:
+The Adzuna collector is optional and requires API credentials. Use it only in accordance with the API terms and applicable permissions:
 
 ```bash
 python -m src.preprocess.collect --help
 ```
 
-Check the returned locations and country fields before using collected postings as a geography-specific evaluation set.
-
-### Run the ESCO lexicon baseline
+### Query the ESCO lexicon
 
 ```bash
 python -m src.extraction.lexicon_baseline \
@@ -76,26 +79,21 @@ python -m src.extraction.lexicon_baseline \
 
 ### Rank a phrase against ESCO
 
-The project includes the ESCO embedding artifacts. The configured sentence-transformer may be downloaded the first time it is used.
-
 ```bash
 python -m src.esco.ranker --query "cloud infrastructure support"
 ```
 
-### Train the NER model
-
-Training uses the local SkillSpan data and downloads the configured pretrained transformer if it is not cached. Training may take substantial time and compute:
+### Train the NER model on SkillSpan
 
 ```bash
 python -m src.extraction.ner_model train \
   --dataset-dir data/benchmarks/skillspan \
   --output-dir models/ner \
-  --search-output results/ner_hp_search.csv \
-  --seed 42 \
-  --no-offline-fallback
+  --search-output /tmp/ner_hp_search.csv \
+  --seed 42
 ```
 
-The trained NER checkpoint is excluded from Git because it is large. A fresh clone needs that checkpoint to run NER inference or the demo; see [models/ner/README.md](models/ner/README.md) for its expected location and regeneration notes.
+Model checkpoints are not included. Training downloads the configured pretrained transformer if it is not cached. See [`models/ner/README.md`](models/ner/README.md) for checkpoint details.
 
 ### Launch the inspection interface
 
@@ -103,9 +101,9 @@ The trained NER checkpoint is excluded from Git because it is large. A fresh clo
 streamlit run src/app.py
 ```
 
-The app opens locally in a browser. It requires the NER checkpoint at `models/ner/best_checkpoint/`, the ESCO embedding files under `models/`, and the ESCO CSV under `data/benchmarks/esco/`.
+The interface requires a trained NER checkpoint and the ESCO embedding files included under `models/`.
 
-### See evaluation commands
+### Inspect evaluation commands
 
 ```bash
 python -m src.evaluation.build_irish_final_results --help
@@ -113,36 +111,6 @@ python -m src.evaluation.run_integration_gate --help
 python -m src.evaluation.build_error_taxonomy --help
 ```
 
-## Data and results
+## Citation and license
 
-The Irish evaluation comprises 85 main-gold postings. A separate 30-posting pilot was used for calibration; together these make the 115-posting screened sample. The sample is availability-constrained and should not be treated as representative of all Irish vacancies. See the [sampling decision](docs/irish_corpus_sampling_decision.md) and the [final results table](results/final_results_table_irish.csv).
-
-The research paper, its LaTeX source, and referenced figures are in [`paper/conference/`](paper/conference/). The compiled paper is [available as a PDF](paper/conference/NLP_Techniques_for_Information_Extraction_and_Skill_Taxonomy_Construction_from_Unstructured_Job_Advertisement_Data.pdf); the LaTeX source is [`nlp_skill_pipeline_conference_paper_.tex`](paper/conference/nlp_skill_pipeline_conference_paper_.tex).
-
-To rebuild the paper PDF, install a LaTeX distribution with `latexmk` and run:
-
-```bash
-cd paper/conference
-latexmk -pdf nlp_skill_pipeline_conference_paper_.tex
-```
-
-The included `IEEEtran.cls` supplies the IEEE conference document class. The Streamlit interface is intended for local project demonstration; no separate cloud deployment configuration is included.
-
-## Data privacy
-
-Review job-posting data, annotation exports, and repository history before public distribution. The JSONL scrubber targets email addresses and phone numbers; it does not guarantee removal of every personal identifier and does not rewrite Git history.
-
-## Release preparation
-
-The software citation metadata is in [CITATION.cff](CITATION.cff). A gold-standard ZIP candidate can be regenerated with:
-
-```bash
-python scripts/prepare_gold_standard_release.py
-shasum -a 256 -c release/irish_gold_standard_pii_review_candidate.zip.sha256
-```
-
-The candidate omits source IDs, reindexes records, and replaces URLs and detected contact patterns. Automated checks found no email or phone patterns. The archive is still marked for manual review because automated checks cannot reliably identify every personal name or confirm redistribution rights. Review it before attaching it to a public release.
-
-## License
-
-See [LICENSE](LICENSE).
+Use [`CITATION.cff`](CITATION.cff) to cite this project. The project software is licensed under the MIT License; see [`LICENSE`](LICENSE). Dataset and taxonomy licenses are described in [`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md).

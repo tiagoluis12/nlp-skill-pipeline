@@ -1,4 +1,4 @@
-"""Build the frozen Phase 5.1 results table for the Irish evaluation."""
+"""Rebuild the Irish results table from public aggregate reports."""
 
 from __future__ import annotations
 
@@ -6,11 +6,7 @@ import argparse
 import csv
 import json
 from pathlib import Path
-from typing import Any, Sequence
-
-from sklearn.metrics import f1_score
-
-from src.extraction.lexicon_baseline import build_lexicon_index, load_esco_skills, match_span_detail
+from typing import Any
 
 
 SYSTEMS = ("Baseline1_Lexicon", "Baseline2_Embedding", "Proposed_NER_Ranking")
@@ -51,72 +47,6 @@ def _normalise_baseline2_test(report: dict[str, Any]) -> dict[str, Any]:
     return result
 
 
-def _linking_macro(rows: Sequence[dict[str, str]], system: str) -> float:
-    reviewed = [row for row in rows if (row.get("gold_concept_uri") or "").strip()]
-    gold: list[str] = []
-    predicted: list[str] = []
-    for row in reviewed:
-        gold_uri = row["gold_concept_uri"].strip()
-        if system == "Baseline1_Lexicon":
-            uri = (row.get("lexicon_uri") or "").strip()
-        elif system == "Baseline2_Embedding":
-            uri = (row.get("candidate_1_uri") or "").strip()
-        else:
-            uri = (row.get("lexicon_uri") or row.get("candidate_1_uri") or "").strip()
-        gold.append(gold_uri)
-        predicted.append(uri or "__NO_PREDICTION__")
-    return float(f1_score(gold, predicted, labels=sorted(set(gold)), average="macro", zero_division=0))
-
-
-def _review_index(rows: Sequence[dict[str, str]]) -> dict[tuple[str, int, int], str]:
-    return {
-        (str(row["posting_id"]), int(row["span_start"]), int(row["span_end"])): row["gold_concept_uri"].strip()
-        for row in rows
-        if (row.get("gold_concept_uri") or "").strip()
-    }
-
-
-def _coverage_from_predictions(path: Path, review: dict[tuple[str, int, int], str]) -> tuple[int, int]:
-    correct: set[str] = set()
-    postings: set[str] = set()
-    for line in path.read_text(encoding="utf-8").splitlines():
-        if not line.strip():
-            continue
-        record = json.loads(line)
-        if not record.get("role_type"):
-            continue
-        posting_id = str(record.get("id"))
-        postings.add(posting_id)
-        for span in record.get("predicted_spans") or []:
-            key = (posting_id, int(span["start"]), int(span["end"]))
-            if review.get(key) and review[key] == span.get("concept_uri"):
-                correct.add(posting_id)
-    return len(correct), len(postings)
-
-
-def _coverage_from_audit(path: Path) -> tuple[int, int]:
-    correct: set[str] = set()
-    postings: set[str] = set()
-    for trace_file in path.glob("*.jsonl"):
-        for line in trace_file.read_text(encoding="utf-8").splitlines():
-            if not line.strip():
-                continue
-            row = json.loads(line)
-            posting_id = str(row.get("posting_id") or "")
-            if not posting_id:
-                continue
-            postings.add(posting_id)
-            if (
-                row.get("record_type") == "predicted_span"
-                and row.get("gold_uri")
-                and row.get("predicted_uri") == row.get("gold_uri")
-                and str(row.get("span_start")) == str(row.get("gold_span_start"))
-                and str(row.get("span_end")) == str(row.get("gold_span_end"))
-            ):
-                correct.add(posting_id)
-    return len(correct), len(postings)
-
-
 def _row(
     system: str,
     dataset: str,
@@ -145,8 +75,7 @@ def _row(
         "skill_trans_f1": _class_metric(report, "SKILL_TRANS", "f1"),
         "esco_acc_at_1": "", "esco_acc_at_3": "", "esco_mrr": "", "esco_macro_f1": "",
         "esco_evaluation_units": "", "end_to_end_coverage": "",
-        "end_to_end_correct_postings": "", "end_to_end_postings": "",
-        "notes": "",
+        "end_to_end_correct_postings": "", "end_to_end_postings": "", "notes": "",
     }
     if linking is not None:
         row.update({
@@ -166,7 +95,7 @@ def _row(
     return row
 
 
-def build_table(results_dir: Path, review_csv: Path, output: Path, audit_dir: Path) -> list[dict[str, Any]]:
+def build_table(results_dir: Path, output: Path) -> list[dict[str, Any]]:
     reports = {
         ("Baseline1_Lexicon", "skillspan_test"): _read_json(results_dir / "baseline1_skillspan.json"),
         ("Baseline2_Embedding", "skillspan_test"): _normalise_baseline2_test(_read_json(results_dir / "baseline2_skillspan.json")),
@@ -180,37 +109,18 @@ def build_table(results_dir: Path, review_csv: Path, output: Path, audit_dir: Pa
         "Baseline2_Embedding": "esco_linking_metrics_baseline2_irish.json",
         "Proposed_NER_Ranking": "esco_linking_metrics_proposed_irish.json",
     }
-    with review_csv.open(encoding="utf-8", newline="") as handle:
-        review_rows = list(csv.DictReader(handle))
-    review_index = _review_index(review_rows)
-    links: dict[str, dict[str, Any]] = {}
-    for system, filename in linking_paths.items():
-        links[system] = _read_json(results_dir / filename)
-        links[system]["macro_f1"] = _linking_macro(review_rows, system)
-
-    baseline1_coverage = _coverage_from_predictions(results_dir / "baseline1_irish_predictions.jsonl", review_index)
-    baseline2_predictions = results_dir / "baseline2_irish_predictions.jsonl"
-    baseline2_coverage = (
-        _coverage_from_predictions(baseline2_predictions, review_index)
-        if baseline2_predictions.exists()
-        else None
-    )
-    proposed_coverage = _coverage_from_audit(audit_dir)
+    frozen = _read_json(results_dir / "irish_aggregate_linking.json")
     rows: list[dict[str, Any]] = []
     for system in SYSTEMS:
         rows.append(_row(system, "skillspan_test", reports[(system, "skillspan_test")]))
-        coverage = (
-            proposed_coverage
-            if system == "Proposed_NER_Ranking"
-            else baseline1_coverage
-            if system == "Baseline1_Lexicon"
-            else baseline2_coverage
-        )
-        row = _row(system, "gold", reports[(system, "gold")], links[system], coverage)
+        linking = _read_json(results_dir / linking_paths[system])
+        linking["macro_f1"] = frozen["macro_f1"][system]
+        coverage_data = frozen["end_to_end_coverage"][system]
+        coverage = (int(coverage_data["correct_postings"]), int(coverage_data["postings"]))
+        row = _row(system, "gold", reports[(system, "gold")], linking, coverage)
         row["notes"] = "Irish gold extraction and reviewed ESCO linking; 1,404 mapped spans, 88 documented coverage gaps excluded."
-        if system == "Baseline2_Embedding" and baseline2_coverage is None:
-            row["notes"] += " Baseline 2 posting coverage is unavailable because the frozen aggregate report has no per-posting predictions."
         rows.append(row)
+
     output.parent.mkdir(parents=True, exist_ok=True)
     with output.open("w", encoding="utf-8", newline="") as handle:
         writer = csv.DictWriter(handle, fieldnames=OUTPUT_FIELDS)
@@ -220,13 +130,11 @@ def build_table(results_dir: Path, review_csv: Path, output: Path, audit_dir: Pa
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Build the Irish Phase 5.1 final results table.")
+    parser = argparse.ArgumentParser(description="Rebuild the Irish results table from aggregate reports.")
     parser.add_argument("--results-dir", type=Path, default=Path("results"))
-    parser.add_argument("--review-csv", type=Path, default=Path("results/irish_gold_esco_review_priority.csv"))
-    parser.add_argument("--audit-dir", type=Path, default=Path("results/audit_traces_irish"))
     parser.add_argument("--output", type=Path, default=Path("results/final_results_table_irish.csv"))
     args = parser.parse_args()
-    rows = build_table(args.results_dir, args.review_csv, args.output, args.audit_dir)
+    rows = build_table(args.results_dir, args.output)
     print(json.dumps({"rows": len(rows), "output": str(args.output)}, indent=2))
 
 
