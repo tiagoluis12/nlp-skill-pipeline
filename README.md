@@ -1,114 +1,135 @@
-# nlp-skill-pipeline
+# NLP Skill Pipeline
 
-Development and evaluation of an NLP pipeline for extracting and classifying skill requirements from entry-level technology job postings.
+A research prototype for extracting skill mentions from job advertisements and linking them to concepts in the European Skills, Competences, Qualifications and Occupations (ESCO) classification. The project compares transparent lexicon matching, embedding-based retrieval, and supervised named-entity recognition (NER) followed by ESCO ranking.
 
-## Current Status
+The evaluation uses the SkillSpan benchmark and an availability-constrained Irish technology-posting sample. It reports extraction, taxonomy-linking, and end-to-end results separately so that a strong ranker is not mistaken for a strong complete pipeline.
 
-Phases 1-5 are implemented, with the final audit gates documented in
-`docs/phase5_status.md`. Phase 6 is not yet release-ready: the corpus geography,
-ESCO gold-label adjudication, privacy scrub, and model-artifact release still
-require completion.
+## Features
 
-## Layout
+- Clean and sentence-segment job-posting JSONL, with basic email and phone redaction.
+- Extract skill spans using lexicon matching or a trained NER model.
+- Rank candidate ESCO concepts and return their labels and URIs.
+- Evaluate exact and relaxed span metrics, ESCO ranking metrics, ablations, and audit traces.
+- Inspect NER and ESCO predictions in a Streamlit interface.
+- Rebuild the final Irish results table from the checked-in evaluation artifacts.
 
-```text
-data/
-  raw/
-  clean/
-  annotated/
-  benchmarks/
-models/
-notebooks/
-results/
-docs/
-src/
-tests/
-```
+## System requirements
 
-## Setup
+- Python 3.11
+- Git and pip
+- Internet access for model downloads, benchmark downloads, or Adzuna collection
+- CPU is sufficient for the table-reproduction command. NER training and transformer inference can require substantial memory and time.
+
+## Install
+
+Run these commands from the repository root:
 
 ```bash
-python -m venv .venv
+python3.11 -m venv .venv
 source .venv/bin/activate
+python -m pip install --upgrade pip
 pip install -r requirements.txt
-set -a && . ./.env && set +a
 ```
 
-## Phase 1 Scripts
+The main evaluation-table command uses checked-in reports and traces. It does not train or run the models. Collection from Adzuna is optional and requires `ADZUNA_APP_ID` and `ADZUNA_APP_KEY`; copy `.env.example` to `.env` and add credentials before using the collector.
 
-- `python -m src.preprocess.download_skillspan --output data/benchmarks/skillspan`
-- `python -m src.preprocess.download_green_et_al --zip-url <url> --output data/benchmarks/green_et_al`
-- `python -m src.preprocess.extract_esco_skills --rdf-zip data/benchmarks/esco/esco_v1.2.0_classification_rdf.zip --output-csv data/benchmarks/esco/skills_en.csv`
-- `python -m src.preprocess.inspect_benchmarks`
+## Reproduce the main results table
 
-## Phase 2 Collection Entry Point
-
-- Intended Ireland collection command: `set -a && . ./.env && set +a && .venv/bin/python -m src.preprocess.collect --role-type all --output-dir data/raw --country gb --where "Republic of Ireland"`
-- Verify the resulting records contain the intended country/location before annotation. The committed corpus currently contains US records and must not be described as Irish-market data.
-
-## Irish Geography-Correction Corpus
-
-The Irish geography-correction sample has an approved target of 115 postings with
-the availability-constrained allocation documented in
-[docs/irish_corpus_sampling_decision.md](</Users/tiagoluis/Developer/nlp-skill-pipeline/docs/irish_corpus_sampling_decision.md>).
-The original 125-posting gold corpus and Phase 5 outputs remain historical
-evaluation artefacts; they are not silently relabelled as Irish data.
-
-## Phase 2 Logging
-
-- `.venv/bin/python -m src.preprocess.corpus_stats --raw-dir data/raw --clean-dir data/clean --output results/corpus_stats.json`
-- Before committing collected records, scrub source JSONL with `.venv/bin/python -m src.preprocess.scrub_pii --input-dir data/raw --output-dir /tmp/nlp-skill-pipeline-raw-scrubbed` and replace only after verifying the output.
-
-## Phase 3 Entry Point
-
-- `.venv/bin/python -m src.extraction.lexicon_baseline --skills-csv data/benchmarks/esco/skills_en.csv --output-index models/esco_lexicon_index.json --query "root cause analysis" --query "cloud infrastructure support"`
-
-## Phase 3-5 Outputs
-
-The baseline, proposed pipeline, ablation, taxonomy, and comparison artefacts are committed:
-
-- `3.1` ESCO lexicon index built and tested
-- `3.2` Baseline 1 evaluated on `SKILLSPAN` test
-- `3.3` ESCO embedding index built and tested
-- `3.4` Threshold search implemented on `SKILLSPAN` dev
-- `3.5` Baseline comparison table generated
-- `3.6` Baseline 2 evaluation on `SKILLSPAN` test and gold
-- `3.7` Baseline comparison table committed to `results/baseline_comparison.csv`
-- `3.8` Unit tests for the baseline modules passing
-
-Current outputs:
-
-- `results/baseline1_skillspan.json`
-- `results/baseline1_gold.json`
-- `results/b2_threshold_search.json`
-- `results/baseline2_skillspan.json`
-- `results/baseline2_gold.json`
-- `results/baseline_comparison.csv`
-- `results/gold_esco_review.csv`
-- `results/gold_esco_review_priority.csv`
-
-The final reported Phase 5 metrics use the project-local MPNet snapshot. Do not
-use the deterministic hashing fallback for final evaluation.
-
-## Phase 4 Status
-
-See [docs/phase4_status.md](</Users/tiagoluis/Developer/nlp-skill-pipeline/docs/phase4_status.md>) for the full task list and execution order.
-
-## Label Studio
-
-Label Studio should run in a separate environment because its current dependency
-requirements conflict with the pinned ML environment:
+From the repository root, run:
 
 ```bash
-python -m venv .labelstudio-venv
-source .labelstudio-venv/bin/activate
-pip install -r requirements-label-studio.txt
-BASE_DATA_DIR="$PWD/.labelstudio-data" \
-LABEL_STUDIO_DISABLE_UPDATE_CHECK=true \
-label-studio start --no-browser \
-  --internal-host 127.0.0.1 \
-  --host http://127.0.0.1:8080 \
-  --port 8080
+python -m src.evaluation.build_irish_final_results
 ```
 
-The main `.venv` is for model training, evaluation, and tests.
+This writes `results/final_results_table_irish.csv` using the frozen metric reports, reviewed ESCO mappings, and audit traces in `results/`. It rebuilds the reported table; it does not retrain models or regenerate predictions.
+
+## Run the project
+
+Run the examples from the repository root. Command-line scripts that accept options show them with `--help`.
+
+### Preprocess job postings
+
+Clean and sentence-segment a JSONL input, writing the output outside the repository:
+
+```bash
+python -m src.preprocess.clean \
+  --input data/raw/cloud_support.jsonl \
+  --output /tmp/cloud_support_clean.jsonl
+```
+
+The Adzuna collector requires credentials. See its available filters before collecting:
+
+```bash
+python -m src.preprocess.collect --help
+```
+
+Check the returned locations and country fields before using collected postings as a geography-specific evaluation set.
+
+### Run the ESCO lexicon baseline
+
+```bash
+python -m src.extraction.lexicon_baseline \
+  --skills-csv data/benchmarks/esco/skills_en.csv \
+  --output-index /tmp/esco_lexicon_index.json \
+  --query "cloud infrastructure support"
+```
+
+### Rank a phrase against ESCO
+
+The project includes the ESCO embedding artifacts. The configured sentence-transformer may be downloaded the first time it is used.
+
+```bash
+python -m src.esco.ranker --query "cloud infrastructure support"
+```
+
+### Train the NER model
+
+Training uses the local SkillSpan data and downloads the configured pretrained transformer if it is not cached. Training may take substantial time and compute:
+
+```bash
+python -m src.extraction.ner_model train \
+  --dataset-dir data/benchmarks/skillspan \
+  --output-dir models/ner \
+  --search-output results/ner_hp_search.csv
+```
+
+The trained NER checkpoint is excluded from Git because it is large. A fresh clone needs that checkpoint to run NER inference or the demo; see [models/ner/README.md](models/ner/README.md) for its expected location and regeneration notes.
+
+### Launch the inspection interface
+
+```bash
+streamlit run src/app.py
+```
+
+The app opens locally in a browser. It requires the NER checkpoint at `models/ner/best_checkpoint/`, the ESCO embedding files under `models/`, and the ESCO CSV under `data/benchmarks/esco/`.
+
+### See evaluation commands
+
+```bash
+python -m src.evaluation.build_irish_final_results --help
+python -m src.evaluation.run_integration_gate --help
+python -m src.evaluation.build_error_taxonomy --help
+```
+
+## Data and results
+
+The Irish evaluation comprises 85 main-gold postings. A separate 30-posting pilot was used for calibration; together these make the 115-posting screened sample. The sample is availability-constrained and should not be treated as representative of all Irish vacancies. See the [sampling decision](docs/irish_corpus_sampling_decision.md) and the [final results table](results/final_results_table_irish.csv).
+
+The research paper, its LaTeX source, and referenced figures are in [`paper/conference/`](paper/conference/). The compiled paper is [available as a PDF](paper/conference/nlp_skill_pipeline_conference_paper_final.pdf).
+
+To rebuild the paper PDF, install a LaTeX distribution with `latexmk` and run:
+
+```bash
+cd paper/conference
+latexmk -pdf nlp_skill_pipeline_conference_paper_2.tex
+```
+
+The included `IEEEtran.cls` supplies the IEEE conference document class. The Streamlit interface is intended for local project demonstration; no separate cloud deployment configuration is included.
+
+## Data privacy
+
+Review job-posting data, annotation exports, and repository history before public distribution. The JSONL scrubber targets email addresses and phone numbers; it does not guarantee removal of every personal identifier and does not rewrite Git history.
+
+## License
+
+See [LICENSE](LICENSE).
