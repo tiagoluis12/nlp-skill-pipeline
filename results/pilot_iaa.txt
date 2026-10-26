@@ -1,0 +1,6 @@
+Pilot inter-annotator agreement (aggregate)
+Tasks: 30
+Tokens: 2650
+Token agreement: 0.9362
+Cohen kappa: 0.0734
+Gate status: FAIL (target kappa >= 0.70)
