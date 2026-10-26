@@ -1,0 +1,122 @@
+{
+  "agreement": 0.9774259120573446,
+  "kappa": 0.6592122656262149,
+  "label_counts_a": {
+    "B-SKILL_TECH": 219,
+    "B-SKILL_TRANS": 21,
+    "I-SKILL_TECH": 121,
+    "I-SKILL_TRANS": 9,
+    "O": 8977
+  },
+  "label_counts_b": {
+    "B-SKILL_TECH": 152,
+    "B-SKILL_TRANS": 34,
+    "I-SKILL_TECH": 57,
+    "I-SKILL_TRANS": 21,
+    "O": 9083
+  },
+  "original_export": "data/annotated/irish_gold_annotated.json",
+  "per_role": {
+    "cloud_support": {
+      "agreement": 0.963876432486298,
+      "disagreements": 145,
+      "kappa": 0.6564721269830778
+    },
+    "cybersecurity": {
+      "agreement": 0.9908256880733946,
+      "disagreements": 25,
+      "kappa": 0.64448051100871
+    },
+    "data_analyst": {
+      "agreement": 0.9765990639625585,
+      "disagreements": 15,
+      "kappa": 0.2805836139169471
+    },
+    "qa_engineer": {
+      "agreement": 0.9938271604938271,
+      "disagreements": 2,
+      "kappa": 0.939028980052691
+    },
+    "software_dev": {
+      "agreement": 0.985392574558734,
+      "disagreements": 24,
+      "kappa": 0.6474564148413053
+    }
+  },
+  "spotcheck_export": "data/annotated/irish_gold_spotcheck_annotated_combined.json",
+  "tasks": 10,
+  "tasks_by_disagreement": [
+    {
+      "disagreement_tokens": 48
+    },
+    {
+      "disagreement_tokens": 46
+    },
+    {
+      "disagreement_tokens": 29
+    },
+    {
+      "disagreement_tokens": 22
+    },
+    {
+      "disagreement_tokens": 18
+    },
+    {
+      "disagreement_tokens": 15
+    },
+    {
+      "disagreement_tokens": 14
+    },
+    {
+      "disagreement_tokens": 11
+    },
+    {
+      "disagreement_tokens": 6
+    },
+    {
+      "disagreement_tokens": 2
+    }
+  ],
+  "top_transitions": [
+    {
+      "annotator_a": "B-SKILL_TECH",
+      "annotator_b": "O",
+      "count": 87
+    },
+    {
+      "annotator_a": "I-SKILL_TECH",
+      "annotator_b": "O",
+      "count": 70
+    },
+    {
+      "annotator_a": "O",
+      "annotator_b": "B-SKILL_TECH",
+      "count": 20
+    },
+    {
+      "annotator_a": "O",
+      "annotator_b": "B-SKILL_TRANS",
+      "count": 15
+    },
+    {
+      "annotator_a": "O",
+      "annotator_b": "I-SKILL_TRANS",
+      "count": 11
+    },
+    {
+      "annotator_a": "O",
+      "annotator_b": "I-SKILL_TECH",
+      "count": 6
+    },
+    {
+      "annotator_a": "B-SKILL_TRANS",
+      "annotator_b": "O",
+      "count": 1
+    },
+    {
+      "annotator_a": "B-SKILL_TRANS",
+      "annotator_b": "I-SKILL_TRANS",
+      "count": 1
+    }
+  ]
+}

@@ -1,0 +1,22 @@
+{
+  "macro_f1": {
+    "Baseline1_Lexicon": 0.1336165556789676,
+    "Baseline2_Embedding": 0.9776264052721936,
+    "Proposed_NER_Ranking": 0.8158928744930831
+  },
+  "end_to_end_coverage": {
+    "Baseline1_Lexicon": {
+      "correct_postings": 49,
+      "postings": 85
+    },
+    "Baseline2_Embedding": {
+      "correct_postings": 84,
+      "postings": 85
+    },
+    "Proposed_NER_Ranking": {
+      "correct_postings": 5,
+      "postings": 85
+    }
+  },
+  "provenance": "Frozen aggregate values computed from the Irish study records; record-level data and predictions are not distributed."
+}
