@@ -115,13 +115,13 @@ python -m src.evaluation.build_error_taxonomy --help
 
 The Irish evaluation comprises 85 main-gold postings. A separate 30-posting pilot was used for calibration; together these make the 115-posting screened sample. The sample is availability-constrained and should not be treated as representative of all Irish vacancies. See the [sampling decision](docs/irish_corpus_sampling_decision.md) and the [final results table](results/final_results_table_irish.csv).
 
-The research paper, its LaTeX source, and referenced figures are in [`paper/conference/`](paper/conference/). The compiled paper is [available as a PDF](paper/conference/nlp_skill_pipeline_conference_paper_final.pdf).
+The research paper, its LaTeX source, and referenced figures are in [`paper/conference/`](paper/conference/). The compiled paper is [available as a PDF](paper/conference/NLP_Techniques_for_Information_Extraction_and_Skill_Taxonomy_Construction_from_Unstructured_Job_Advertisement_Data.pdf); the LaTeX source is [`nlp_skill_pipeline_conference_paper_.tex`](paper/conference/nlp_skill_pipeline_conference_paper_.tex).
 
 To rebuild the paper PDF, install a LaTeX distribution with `latexmk` and run:
 
 ```bash
 cd paper/conference
-latexmk -pdf nlp_skill_pipeline_conference_paper_2.tex
+latexmk -pdf nlp_skill_pipeline_conference_paper_.tex
 ```
 
 The included `IEEEtran.cls` supplies the IEEE conference document class. The Streamlit interface is intended for local project demonstration; no separate cloud deployment configuration is included.
