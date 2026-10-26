@@ -1,6 +1,6 @@
 # NLP Skill Pipeline
 
-A research prototype for extracting skill mentions from job advertisements and linking them to concepts in the European Skills, Competences, Qualifications and Occupations (ESCO) classification. The project compares lexicon matching, embedding-based retrieval, and named-entity recognition (NER) followed by ESCO ranking. The conference paper and its LaTeX source are in [`paper/conference/`](paper/conference/).
+A research prototype for extracting skill mentions from job advertisements and linking them to concepts in the European Skills, Competences, Qualifications and Occupations (ESCO) classification. The project compares lexicon matching, embedding-based retrieval, and named-entity recognition (NER) followed by ESCO ranking. The [conference paper PDF](paper/conference/NLP_Techniques_for_Information_Extraction_and_Skill_Taxonomy_Construction_from_Unstructured_Job_Advertisement_Data.pdf) and its LaTeX source are in [`paper/conference/`](paper/conference/).
 
 ## Features
 
@@ -43,18 +43,27 @@ python -m src.evaluation.build_irish_final_results
 
 This rebuilds `results/final_results_table_irish.csv` from the checked-in aggregate extraction reports, ESCO linking metrics, and frozen posting-level coverage counts. It does not train models or regenerate predictions, and the source Irish postings and record-level outputs are not included.
 
-The conference paper's aggregate tables and figures are in `results/` and `paper/conference/`. To rebuild the paper PDF, install a LaTeX distribution with `latexmk`, then run:
+The conference paper's aggregate tables and figures are in `results/` and `paper/conference/`. From the repository root, rebuild the PDF with a LaTeX distribution that includes `latexmk`:
 
 ```bash
-cd paper/conference
-latexmk -pdf nlp_skill_pipeline_conference_paper_.tex
+latexmk -pdf -cd paper/conference/nlp_skill_pipeline_conference_paper_.tex
 ```
+
+The `-cd` option runs LaTeX in the source directory without changing your terminal's working directory, so you remain at the repository root for the commands below.
 
 ## Run the project
 
-Run commands from the repository root. Command-line scripts show their options with `--help`.
+Run project commands from the repository root. If your terminal is in a subdirectory such as `paper/conference`, return to the repository root first:
+
+```bash
+cd "$(git rev-parse --show-toplevel)"
+```
+
+Command-line scripts show their options with `--help`.
 
 ### Preprocess an authorized JSONL input
+
+Replace the example input path below with the path to a real JSONL file you are authorized to use.
 
 ```bash
 python -m src.preprocess.clean \
