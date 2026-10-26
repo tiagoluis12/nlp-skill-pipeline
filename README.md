@@ -11,6 +11,10 @@ A research prototype for extracting skill mentions from job advertisements and l
 - Inspect local predictions in a Streamlit interface.
 - Rebuild the checked-in aggregate Irish results table from frozen metric reports.
 
+## Demo video
+
+Watch the project screencast: [NLP Skill Pipeline demo (MP4)](nlp-skill-pipeline-video/nlp-skill-pipeline-video.mp4).
+
 ## Data and licensing
 
 The Irish job-advertisement corpus, annotations, per-posting predictions, review queues, and audit traces are not distributed in this repository. Written permission to redistribute the source postings has not been established. The paper reports aggregate results for the study sample; this repository does not contain the underlying Irish records needed to rerun those experiments. Use only data that you are authorized to collect and process.
